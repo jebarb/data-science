@@ -1,0 +1,39 @@
+---
+title: 'Lab 1: data.gov'
+author: "James Barbour"
+date: "January 16, 2017"
+output:
+  pdf_document: 
+    latex_engine: xelatex
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Aviation Accidents and Fatalities, 1975-2014
+
+This data set is provided by the NTSB, found [here](https://catalog.data.gov/dataset/accidents-fatalities-and-rates-1995-through-2014-u-s-general-aviation). Initially, it was poorly formatted and unusable, but since it is a small dataset, I was able to quickly manually clean up the data.
+
+The data set contains the number of aviation accidents (All) from 1975 to 2014. For each year, the number of fatal accidents (Fatal), the total number of fatalities (Total), number of fatalaties aboard flights (Aboard), and flight hours logged that year (Flight.Hours).
+
+I decided to run a multiple linear regression on the datase to predict the number of accidents from the year and flight hours. While flight hours alone isn't a reliable predictor of accidents, the year and flight hours together predict the number of total accidents fairly reliably with an adjusted R^2 value of 0.89. This is likely due to an increase in safety standards and technology combined with the increase in the average size of commercial airplanes over the years.
+
+```{r}
+datagov <- read.csv("table10_2014.csv")
+summary(datagov)
+head(datagov)
+hours.lm = lm(All ~ Year + Flight.Hours, data = datagov)
+summary(hours.lm)
+plot(hours.lm, which = 1:2)
+
+```
+
+## Total accidents per year
+Points sized by number of fatalities, alpha is flight hours per year
+
+```{r}
+ggplot(data = datagov) + geom_point(mapping = aes(x = Year, y = All, size = Total, alpha = Flight.Hours))
+```
