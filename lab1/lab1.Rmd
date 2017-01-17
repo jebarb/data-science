@@ -1,0 +1,32 @@
+---
+title: 'Lab 1: data.gov'
+author: "James Barbour"
+date: "January 16, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Aviation Accidents and Fatalities, 1995-2014
+
+This dataset is provided by the NTSB. Initially, it was poorly formatted and unusable, but since it is a small dataset, I was able to quickly manually clean up the data.
+
+```{r}
+datagov <- read.csv("table10_2014.csv")
+summary(datagov)
+head(datagov)
+hours.lm = lm(All ~ Year + Flight.Hours, data = datagov)
+summary(hours.lm)
+plot(hours.lm, which = 1:2)
+
+```
+
+## Total accidents per year
+Points sized by number of fatalities, alpha is flight hours per year
+
+```{r}
+ggplot(data = datagov) + geom_point(mapping = aes(x = Year, y = All, size = Total, alpha = Flight.Hours))
+```
