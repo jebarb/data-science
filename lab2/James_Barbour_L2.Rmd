@@ -1,7 +1,7 @@
 ---
-title: 'Lab 1: data.gov'
+title: 'Lab 2: data.gov and reproducibility'
 author: "James Barbour"
-date: "January 16, 2017"
+date: "January 18, 2017"
 output:
   html_document: default
   pdf_document:
@@ -19,21 +19,29 @@ This data set is provided by the NTSB, found [here](https://catalog.data.gov/dat
 
 The data set contains the number of aviation accidents (All) from 1975 to 2014. For each year, the number of fatal accidents (Fatal), the total number of fatalities (Total), number of fatalaties aboard flights (Aboard), and flight hours logged that year (Flight.Hours).
 
-I decided to run a multiple linear regression on the datase to predict the number of accidents from the year and flight hours. While flight hours alone isn't a reliable predictor of accidents, the year and flight hours together predict the number of total accidents fairly reliably with an adjusted R^2 value of 0.89. This is likely due to an increase in safety standards and technology combined with the increase in the average size of commercial airplanes over the years.
-
 ```{r}
-datagov <- read.csv("table10_2014.csv")
+datagov <- read_csv("aviation_accidents-2014.csv")
 summary(datagov)
 head(datagov)
-hours.lm = lm(All ~ Year + Flight.Hours, data = datagov)
-summary(hours.lm)
-plot(hours.lm, which = 1:2)
-
 ```
 
 ## Total accidents per year
-Points sized by number of fatalities, alpha is flight hours per year
+Points sized by number of fatalities, alpha is flight hours per year. This plot tells us there is a correlation between both year and flight hours and total number of annual accidents.
 
 ```{r}
 ggplot(data = datagov) + geom_point(mapping = aes(x = Year, y = All, size = Total, alpha = Flight.Hours))
+```
+
+## Percentage of fatal accidents per year
+Points sized by total number of fatalities, alpha is flight hours per year. This plot tells us there may be a weak correlation between of percentage of fatal accidents and year.
+
+```{r}
+ggplot(data = datagov) + geom_point(mapping = aes(x = Year, y = Fatal/All, size = Total, alpha = Flight.Hours))
+```
+
+## Fatalities per year
+Points sized by total accidents, alpha is flight hours per year. This plot tells us there is a correlation between both year and flight hours and total number of annual fatalities.
+
+```{r}
+ggplot(data = datagov) + geom_point(mapping = aes(x = Year, y = Total, size = All, alpha = Flight.Hours))
 ```
