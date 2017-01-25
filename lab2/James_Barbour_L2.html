@@ -129,48 +129,17 @@ $(document).ready(function () {
 <p>This data set is provided by the NTSB, found <a href="https://catalog.data.gov/dataset/accidents-fatalities-and-rates-1995-through-2014-u-s-general-aviation">here</a>. Initially, it was poorly formatted and unusable, but since it is a small dataset, I was able to quickly manually clean up the data.</p>
 <p>The data set contains the number of aviation accidents (All) from 1975 to 2014. For each year, the number of fatal accidents (Fatal), the total number of fatalities (Total), number of fatalaties aboard flights (Aboard), and flight hours logged that year (Flight.Hours).</p>
 <p>I decided to run a multiple linear regression on the datase to predict the number of accidents from the year and flight hours. While flight hours alone isn’t a reliable predictor of accidents, the year and flight hours together predict the number of total accidents fairly reliably with an adjusted R^2 value of 0.89. This is likely due to an increase in safety standards and technology combined with the increase in the average size of commercial airplanes over the years.</p>
-<pre class="r"><code># dataGov &lt;- read_csv(&quot;aviation_accidents-2014.csv&quot;)
-# dataGov = dput(dataGov)
-dataGov &lt;- structure(list(Year = c(1975L, 1976L, 1977L, 1978L, 1979L, 1980L, 
-1981L, 1982L, 1983L, 1984L, 1985L, 1986L, 1987L, 1988L, 1989L, 
-1990L, 1991L, 1992L, 1993L, 1994L, 1995L, 1996L, 1997L, 1998L, 
-1999L, 2000L, 2001L, 2002L, 2003L, 2004L, 2005L, 2006L, 2007L, 
-2008L, 2009L, 2010L, 2012L, 2013L, 2014L), All = c(3995L, 4018L, 
-4079L, 4216L, 3818L, 3590L, 3500L, 3233L, 3075L, 3017L, 2739L, 
-2581L, 2494L, 2388L, 2242L, 2242L, 2197L, 2110L, 2064L, 2021L, 
-2056L, 1908L, 1840L, 1902L, 1905L, 1837L, 1727L, 1716L, 1741L, 
-1619L, 1671L, 1523L, 1654L, 1568L, 1480L, 1440L, 1470L, 1224L, 
-1221L), Fatal = c(633L, 658L, 661L, 719L, 631L, 618L, 654L, 591L, 
-555L, 545L, 498L, 474L, 446L, 460L, 432L, 444L, 439L, 450L, 401L, 
-404L, 412L, 361L, 350L, 364L, 340L, 345L, 325L, 345L, 352L, 314L, 
-321L, 308L, 288L, 277L, 275L, 271L, 272L, 222L, 253L), Total = c(1252L, 
-1216L, 1276L, 1556L, 1221L, 1239L, 1282L, 1187L, 1068L, 1042L, 
-956L, 967L, 837L, 797L, 769L, 770L, 800L, 866L, 744L, 730L, 734L, 
-636L, 631L, 624L, 621L, 596L, 562L, 581L, 633L, 559L, 563L, 706L, 
-496L, 496L, 479L, 458L, 437L, 391L, 419L), Aboard = c(1231L, 
-1203L, 1265L, 1398L, 1203L, 1230L, 1261L, 1171L, 1061L, 1021L, 
-945L, 879L, 822L, 792L, 766L, 765L, 786L, 864L, 740L, 723L, 727L, 
-619L, 625L, 618L, 615L, 585L, 558L, 575L, 630L, 559L, 558L, 547L, 
-491L, 487L, 470L, 455L, 437L, 386L, 410L), Flight.Hours = c(28799000L, 
-30476000L, 31578000L, 34887000L, 38641000L, 36402000L, 36803000L, 
-29640000L, 28673000L, 29099000L, 28322000L, 27073000L, 26972000L, 
-27446000L, 27920000L, 28510000L, 27678000L, 24780000L, 22796000L, 
-22235000L, 24906000L, 24881000L, 25591000L, 25518000L, 29246000L, 
-27838000L, 25431000L, 25545000L, 25998000L, 24888000L, 23168000L, 
-23963000L, 23819000L, 22805000L, 20862000L, 21688000L, 20881000L, 
-19492000L, 18103000L)), class = c(&quot;tbl_df&quot;, &quot;tbl&quot;, &quot;data.frame&quot;
-), row.names = c(NA, -39L), .Names = c(&quot;Year&quot;, &quot;All&quot;, &quot;Fatal&quot;, 
-&quot;Total&quot;, &quot;Aboard&quot;, &quot;Flight.Hours&quot;), spec = structure(list(cols = structure(list(
-    Year = structure(list(), class = c(&quot;collector_integer&quot;, &quot;collector&quot;
-    )), All = structure(list(), class = c(&quot;collector_integer&quot;, 
-    &quot;collector&quot;)), Fatal = structure(list(), class = c(&quot;collector_integer&quot;, 
-    &quot;collector&quot;)), Total = structure(list(), class = c(&quot;collector_integer&quot;, 
-    &quot;collector&quot;)), Aboard = structure(list(), class = c(&quot;collector_integer&quot;, 
-    &quot;collector&quot;)), Flight.Hours = structure(list(), class = c(&quot;collector_integer&quot;, 
-    &quot;collector&quot;))), .Names = c(&quot;Year&quot;, &quot;All&quot;, &quot;Fatal&quot;, &quot;Total&quot;, 
-&quot;Aboard&quot;, &quot;Flight.Hours&quot;)), default = structure(list(), class = c(&quot;collector_guess&quot;, 
-&quot;collector&quot;))), .Names = c(&quot;cols&quot;, &quot;default&quot;), class = &quot;col_spec&quot;))
-
+<pre class="r"><code>dataGov &lt;- read_csv(&quot;aviation_accidents-2014.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   Year = col_integer(),
+##   All = col_integer(),
+##   Fatal = col_integer(),
+##   Total = col_integer(),
+##   Aboard = col_integer(),
+##   Flight.Hours = col_integer()
+## )</code></pre>
+<pre class="r"><code># dataGov = dput(dataGov)
 summary(dataGov)</code></pre>
 <pre><code>##       Year           All           Fatal           Total       
 ##  Min.   :1975   Min.   :1221   Min.   :222.0   Min.   : 391.0  

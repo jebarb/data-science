@@ -141,7 +141,7 @@ ggplot(data = select(radio_dept, totalsal),
 
 ## Question 6
 
-Use faceting to make histograms of department salaries for Radiation Oncology, Radiology, Pediatrics, and Orthopaedics.
+Use faceting to make totalsal histograms for Radiation Oncology, Radiology, Pediatrics, and Orthopaedics departments.
 ```{r }
 ggplot(data = filter(data, 
                      dept == "Radiation Oncology" | 
@@ -201,6 +201,65 @@ head(arrange(dept_summary, desc(med_sal)), 10)
 Why do these lists differ? If you were asked for the top 10 best paid departments at UNC which summary would you choose and why?
 
 They differ because mean is the average and median is the middle of a group. Median salary will offer the best representation of pay rates of departments. The mean is more prone to being skewed and can offer a misrepresentation of salary data. The median, however, simply states half of employees make more and half less than this value, which makes it a more accurate representation of a typical salary.
+
+
+## Question 8
+How many departments have at least 10 employees?
+```{r }
+#
+```
+
+
+## Question 9
+Which department hired the most people in 2010? Hint: you probably have to modify `hiredate`.
+```{r }
+#
+```
+
+## Question 10
+Make a list of all the department names and sort this list alphabetically. What is the 42nd department in this list?
+```{r }
+#
+```
+
+
+## Question 11
+Plot number of people hired by the CS dept per year vs. year
+```{r }
+#
+```
+
+
+Now add STOR, Math, Biostatistics, SILS and Physics to the above plot
+```{r }
+#
+```
+
+
+# Open question
+
+Examine the relationship between age and salary at UNC. You can interpret this however you like e.g.
+
+- age can mean number of years employed at the university
+- compare and contrast different departments
+
+Requirements
+
+- hand in a separate .Rmd document 
+    - load the data with read_csv(url(...)) like this script
+- make 3 figures
+    - a figure can be a visualization, print out of a data frame that you can created, the results of a statistical model/test (e.g. linear regression)
+- display all code used
+    - code should be commented
+    - if you have a lot of functions you can put them in a separate .R script
+- describe each figure
+    - what is the figure (figure blah is a plot of foo vs. bar)
+    - what is the upshot of the figure (figure blah shows that there is a strong relationship between foo and bar)
+- write an explanation of your findings
+    - a couple paragraphs
+    - use proper grammar
+    - your findings should be clear
+
 
 # hints
 

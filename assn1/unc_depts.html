@@ -364,7 +364,7 @@ radio_dept</code></pre>
 </div>
 <div id="question-6" class="section level2">
 <h2>Question 6</h2>
-<p>Use faceting to make histograms of department salaries for Radiation Oncology, Radiology, Pediatrics, and Orthopaedics.</p>
+<p>Use faceting to make totalsal histograms for Radiation Oncology, Radiology, Pediatrics, and Orthopaedics departments.</p>
 <pre class="r"><code>ggplot(data = filter(data, 
                      dept == &quot;Radiation Oncology&quot; | 
                        dept == &quot;Radiology&quot; | 
@@ -453,7 +453,65 @@ head(dept_summary)</code></pre>
 ## 9  University Ombuds Office         3 128425.3  157127  164985
 ## 10    Ath Basketball Office        10 159349.7  150000  371402</code></pre>
 <p>Why do these lists differ? If you were asked for the top 10 best paid departments at UNC which summary would you choose and why?</p>
+<p>They differ because mean is the average and median is the middle of a group. Median salary will offer the best representation of pay rates of departments. The mean is more prone to being skewed and can offer a misrepresentation of salary data. The median, however, simply states half of employees make more and half less than this value, which makes it a more accurate representation of a typical salary.</p>
 </div>
+<div id="question-8" class="section level2">
+<h2>Question 8</h2>
+<p>How many departments have at least 10 employees?</p>
+<pre class="r"><code>#</code></pre>
+</div>
+<div id="question-9" class="section level2">
+<h2>Question 9</h2>
+<p>Which department hired the most people in 2010? Hint: you probably have to modify <code>hiredate</code>.</p>
+<pre class="r"><code>#</code></pre>
+</div>
+<div id="question-10" class="section level2">
+<h2>Question 10</h2>
+<p>Make a list of all the department names and sort this list alphabetically. What is the 42nd department in this list?</p>
+<pre class="r"><code>#</code></pre>
+</div>
+<div id="question-11" class="section level2">
+<h2>Question 11</h2>
+<p>Plot number of people hired by the CS dept per year vs. year</p>
+<pre class="r"><code>#</code></pre>
+<p>Now add STOR, Math, Biostatistics, SILS and Physics to the above plot</p>
+<pre class="r"><code>#</code></pre>
+</div>
+</div>
+<div id="open-question" class="section level1">
+<h1>Open question</h1>
+<p>Examine the relationship between age and salary at UNC. You can interpret this however you like e.g.</p>
+<ul>
+<li>age can mean number of years employed at the university</li>
+<li>compare and contrast different departments</li>
+</ul>
+<p>Requirements</p>
+<ul>
+<li>hand in a separate .Rmd document
+<ul>
+<li>load the data with read_csv(url(…)) like this script</li>
+</ul></li>
+<li>make 3 figures
+<ul>
+<li>a figure can be a visualization, print out of a data frame that you can created, the results of a statistical model/test (e.g. linear regression)</li>
+</ul></li>
+<li>display all code used
+<ul>
+<li>code should be commented</li>
+<li>if you have a lot of functions you can put them in a separate .R script</li>
+</ul></li>
+<li>describe each figure
+<ul>
+<li>what is the figure (figure blah is a plot of foo vs. bar)</li>
+<li>what is the upshot of the figure (figure blah shows that there is a strong relationship between foo and bar)</li>
+</ul></li>
+<li>write an explanation of your findings
+<ul>
+<li>a couple paragraphs</li>
+<li>use proper grammar</li>
+<li>your findings should be clear</li>
+</ul></li>
+</ul>
 </div>
 <div id="hints" class="section level1">
 <h1>hints</h1>
