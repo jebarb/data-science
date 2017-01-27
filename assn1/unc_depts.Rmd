@@ -206,33 +206,61 @@ They differ because mean is the average and median is the middle of a group. Med
 ## Question 8
 How many departments have at least 10 employees?
 ```{r }
-#
+nrow(filter(summarize(group_by(data, dept), emp = n()), emp >= 10))
+
 ```
 
 
 ## Question 9
 Which department hired the most people in 2010? Hint: you probably have to modify `hiredate`.
 ```{r }
-#
+head(arrange(summarize(group_by(filter(data, hiredate > 20099999 & hiredate < 20110000), dept), count = n()), desc(count)), 1)$dept
 ```
 
 ## Question 10
 Make a list of all the department names and sort this list alphabetically. What is the 42nd department in this list?
 ```{r }
-#
+slice(arrange(distinct(data, dept), dept), 42)$dept
 ```
 
 
 ## Question 11
 Plot number of people hired by the CS dept per year vs. year
 ```{r }
-#
+cs_hires <- summarize(
+  group_by(
+    mutate(
+      select(
+        filter(data, dept == "Computer Science"),
+        hiredate), 
+      hiredate = as.integer(hiredate / 10000)), 
+    hiredate), 
+  count = n())
+for (year in min(cs_hires$hiredate):max(cs_hires$hiredate)) {
+  if (!(year %in% cs_hires$hiredate)) {
+    add_row(cs_hires, hiredate = year, count = 0)
+  }
+}
+
+ggplot(data = cs_hires, mapping = aes(x = hiredate, y = count)) + 
+         geom_point()
 ```
 
 
 Now add STOR, Math, Biostatistics, SILS and Physics to the above plot
 ```{r }
-#
+more_hires <- summarize(
+  group_by(
+    mutate(
+      select(
+        filter(data, dept == "Computer Science" | dept == "SILS" | dept == "Math" | dept == "STOR" | dept == "Biostatistics" | dept == "Physics"),
+        hiredate, dept), 
+      hiredate = as.integer(hiredate / 10000)), 
+    hiredate), 
+  count = n())
+
+ggplot(data = more_hires, mapping = aes(x = hiredate, y = count, color = dept)) + 
+         geom_point()
 ```
 
 
