@@ -253,10 +253,10 @@ more_hires <- summarize(
   group_by(
     mutate(
       select(
-        filter(data, dept == "Computer Science" | dept == "SILS" | dept == "Math" | dept == "STOR" | dept == "Biostatistics" | dept == "Physics"),
-        hiredate, dept), 
-      hiredate = as.integer(hiredate / 10000)), 
-    hiredate), 
+        filter(data, dept == "Computer Science" | dept == "SILS" | dept == "Mathematics" | dept == "Statistics and Operations Res" | dept == "Biostatistics" | dept == "Physics-Astronomy"),
+        dept, hiredate), 
+      hiredate = as.integer(hiredate / 10000), dept = dept), 
+    hiredate, dept), 
   count = n())
 
 ggplot(data = more_hires, mapping = aes(x = hiredate, y = count, color = dept)) + 
