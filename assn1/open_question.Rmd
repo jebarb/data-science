@@ -1,0 +1,49 @@
+---
+title: "Age and Salary at UNC"
+author: "James Barbour"
+date: "1/29/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Importing data
+
+
+```{r}
+# Read data, get rid of unneeded columns
+data <- read_csv(url("http://ryanthornburg.com/wp-content/uploads/2015/05/UNC_Salares_NandO_2015-05-06.csv"))
+data <- select(data, age, totalsal)
+```
+
+## Summary of data
+```{r}
+summary(data)
+```
+
+## Linear model and summary of LM
+This model shows there is basically no correlation between age and total salary. Adjusted R^2 is 0.05539, indicating no correlation.
+```{r}
+data_lm = lm(totalsal ~ age, data)
+summary(data_lm)
+```
+
+## Diagnostic plots of Linear Model
+Visually shows how poor the model is
+```{r}
+plot(data_lm, which=1:2)
+```
+
+## Age vs Total Salary
+Again, visually showing there is no correlation
+```{r}
+ggplot(data=data, mapping=aes(x=age, y=totalsal)) + geom_jitter()
+```
+
+## Summary
+My findings indicate there is no general correlation or connection between age and total salary at UNC, given no additional variables. From the last plot, the vast majority ages seem to be in a range from 25 to 70 and salaries from 3000-200000.
+<br>
+There's not much else to say. Given salaries for a single position in a single department, there may be more of a correlation. Also, given total time employed in a single position in a single department, there may be more of a correlation. However, as a general university-wide case with no other variables, age has no correlation with salary.

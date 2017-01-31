@@ -163,8 +163,8 @@ ggplot(data = filter(data,
                        dept == "Radiology" | 
                        dept == "Pediatrics" | 
                        dept == "Orthopaedics"), 
-       mapping = aes(x = age, y = totalsal)) + 
-  geom_point() +
+       mapping = aes(x = age, y = totalsal, color = position)) + 
+  geom_point() + guides(color = FALSE) + 
   facet_wrap(~dept)
 ```
 
@@ -236,11 +236,6 @@ cs_hires <- summarize(
       hiredate = as.integer(hiredate / 10000)), 
     hiredate), 
   count = n())
-for (year in min(cs_hires$hiredate):max(cs_hires$hiredate)) {
-  if (!(year %in% cs_hires$hiredate)) {
-    add_row(cs_hires, hiredate = year, count = 0)
-  }
-}
 
 ggplot(data = cs_hires, mapping = aes(x = hiredate, y = count)) + 
          geom_point()
@@ -258,7 +253,7 @@ more_hires <- summarize(
       hiredate = as.integer(hiredate / 10000), dept = dept), 
     hiredate, dept), 
   count = n())
-
+# add jitter to graph, find sils stuff
 ggplot(data = more_hires, mapping = aes(x = hiredate, y = count, color = dept)) + 
          geom_point()
 ```
