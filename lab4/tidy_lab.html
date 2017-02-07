@@ -237,12 +237,13 @@ str(whales)</code></pre>
                             outcome = tolower(as.character(outcome)),
                             size = as.integer(size),
                             ocean = tolower(as.character(ocean)))
+whales$outcome &lt;- replace(whales$outcome, whales$outcome==&quot;&quot;, NA)
 whales</code></pre>
 <pre><code>## # A tibble: 42 × 6
 ##    observer  species       date outcome  size    ocean
 ##       &lt;int&gt;    &lt;chr&gt;     &lt;dttm&gt;   &lt;chr&gt; &lt;int&gt;    &lt;chr&gt;
 ## 1         1     blue 2015-01-20   death    NA   indian
-## 2         6     blue 2016-05-02            80  pacific
+## 2         6     blue 2016-05-02    &lt;NA&gt;    80  pacific
 ## 3        10     blue 2013-04-12   death    84  pacific
 ## 4        19     blue 2010-07-24  injury    76  pacific
 ## 5        26     blue 2015-09-06   death    30   indian
@@ -250,7 +251,7 @@ whales</code></pre>
 ## 7         4 humpback 2012-03-04   death    56  pacific
 ## 8         9 humpback 2015-10-30  injury    46 atlantic
 ## 9        13 humpback 2016-09-17   death    24 atlantic
-## 10       17 humpback 2016-08-29            NA  pacific
+## 10       17 humpback 2016-08-29    &lt;NA&gt;    NA  pacific
 ## # ... with 32 more rows</code></pre>
 <p>hint: <code>parse_datetime</code></p>
 </div>
@@ -279,9 +280,7 @@ whales</code></pre>
 <div id="q7" class="section level2">
 <h2>Q7</h2>
 <p>As in the lecture, use <code>unite</code> to check the dataset has only one observation per observer and species. You do not need to save the result, just print a summary as in the lecture.</p>
-<pre class="r"><code># From lecture:
-# unite(art, col = id, constituentid, objectid) %&gt;% count(id) %&gt;% summary
-unite(whales, col = observer, observer, species) %&gt;% count(observer) %&gt;% summary</code></pre>
+<pre class="r"><code>unite(whales, col = observer, observer, species) %&gt;% count(observer) %&gt;% summary</code></pre>
 <pre><code>##    observer               n    
 ##  Length:42          Min.   :1  
 ##  Class :character   1st Qu.:1  
@@ -296,23 +295,7 @@ unite(whales, col = observer, observer, species) %&gt;% count(observer) %&gt;% s
 <p>Don’t worry about the NA values you replaced blanks with, and don’t worry about the change in date format or any other changes in variable format.</p>
 <p>Do put the information back in the same order in which it came.</p>
 <p>Save over the old <code>whales</code> object with the new.</p>
-<pre class="r"><code>whales &lt;- spread(unite(whales, col = info, date, outcome, size, ocean, sep = &quot;, &quot;), species, info)
-whales</code></pre>
-<pre><code>## # A tibble: 31 × 9
-##    observer                           blue                       bowhead
-## *     &lt;int&gt;                          &lt;chr&gt;                         &lt;chr&gt;
-## 1         1  2015-01-20, death, NA, indian                          &lt;NA&gt;
-## 2         2                           &lt;NA&gt; 2013-06-24, injury, 30, artic
-## 3         3                           &lt;NA&gt;                          &lt;NA&gt;
-## 4         4                           &lt;NA&gt;                          &lt;NA&gt;
-## 5         5                           &lt;NA&gt;                          &lt;NA&gt;
-## 6         6      2016-05-02, , 80, pacific                          &lt;NA&gt;
-## 7         7                           &lt;NA&gt; 2013-06-25, death, 45, arctic
-## 8         8                           &lt;NA&gt;                          &lt;NA&gt;
-## 9         9                           &lt;NA&gt;                          &lt;NA&gt;
-## 10       10 2013-04-12, death, 84, pacific                          &lt;NA&gt;
-## # ... with 21 more rows, and 6 more variables: fin &lt;chr&gt;, grey &lt;chr&gt;,
-## #   humpback &lt;chr&gt;, killer_whale &lt;chr&gt;, sei &lt;chr&gt;, southern_right &lt;chr&gt;</code></pre>
+<pre class="r"><code>whales &lt;- spread(unite(whales, col = info, date, outcome, size, ocean, sep = &quot;, &quot;), species, info)</code></pre>
 </div>
 </div>
 

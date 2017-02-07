@@ -85,7 +85,7 @@ whales <- whales %>% mutate(observer = as.integer(observer),
                             outcome = tolower(as.character(outcome)),
                             size = as.integer(size),
                             ocean = tolower(as.character(ocean)))
-whales
+whales$outcome <- replace(whales$outcome, whales$outcome=="", NA)
 ```
 
 hint: `parse_datetime`
@@ -108,8 +108,6 @@ select(
 As in the lecture,  use `unite` to check the dataset has only one observation per observer and species. You do not need to save the result, just print a summary as in the lecture.
 
 ```{r}
-# From lecture:
-# unite(art, col = id, constituentid, objectid) %>% count(id) %>% summary
 unite(whales, col = observer, observer, species) %>% count(observer) %>% summary
 ```
 
