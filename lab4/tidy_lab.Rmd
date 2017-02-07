@@ -30,7 +30,12 @@ Since the meaning of `tidy` depends on your goals, assume you are someone intere
 Use whatever functions you deem necessary to answer the question: Does `whales` meet the three criteria for tidy data given in the lecture? Put the code you wrote in one chunk then type TRUE or FALSE in another code chunk.
 
 ```{r}
-#
+whales
+head(whales)
+colnames(whales)
+```
+```{r}
+FALSE
 ```
 
 ## Q2
@@ -42,14 +47,14 @@ Label your key variable `species` and your value variable `info`.
 Your new object should write over the original `whales` data frame.
 
 ```{r}
-#
+whales <- gather(whales, blue, humpback, southern_right, sei, fin, killer_whale, bowhead, grey, key = "species", value = "info")
 ```
 
 
 ## Q3
 Create a data frame that includes only events for which there is information---writing over the `whales` object again.
 ```{r}
-#
+whales <- filter(whales, info != '')
 ```
 
 hint: `is.na`
@@ -61,7 +66,7 @@ Again replace the old `whales` with the new.
 
 Your new data frame should have six variables: observer, species, date, outcome, size, ocean.
 ```{r}
-#
+whales <- whales %>% separate(info, c("date", "outcome", "size", "ocean"), sep = ", *")
 ```
 
 
@@ -74,7 +79,13 @@ Using an ifelse statement or other method, replace blanks in your data with `NA.
 
 Again save your result as `whales.`
 ```{r}
-#
+whales <- whales %>% mutate(observer = as.integer(observer),
+                            species = tolower(as.character(species)),
+                            date = parse_datetime(date, format="%m/%d/%y"),
+                            outcome = tolower(as.character(outcome)),
+                            size = as.integer(size),
+                            ocean = tolower(as.character(ocean)))
+whales
 ```
 
 hint: `parse_datetime`
@@ -84,7 +95,12 @@ Print a summary table with: 1) number ship strikes by species, 2) average whale 
 
 Print here means you do not need to save the result.
 ```{r}
-#
+select(
+  summarize(
+    group_by(whales, species),
+    strikes = n(),
+    avg_size = mean(size, na.rm = TRUE)),
+  species, strikes, avg_size)
 ```
 
 
@@ -92,7 +108,9 @@ Print here means you do not need to save the result.
 As in the lecture,  use `unite` to check the dataset has only one observation per observer and species. You do not need to save the result, just print a summary as in the lecture.
 
 ```{r}
-#
+# From lecture:
+# unite(art, col = id, constituentid, objectid) %>% count(id) %>% summary
+unite(whales, col = observer, observer, species) %>% count(observer) %>% summary
 ```
 
 
@@ -105,5 +123,5 @@ Do put the information back in the same order in which it came.
 
 Save over the old `whales` object with the new.
 ```{r}
-#
+whales <- spread(unite(whales, col = info, date, outcome, size, ocean, sep = ", "), species, info)
 ```

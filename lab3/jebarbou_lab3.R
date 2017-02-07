@@ -30,13 +30,9 @@ monkey <- function(chars) {
   # check conditions
   for (i in 1:(chars)) {
     # check i after e except after c
-    if (characters[i] == 'e') {
-      if (characters[i+1] == 'i') {
-        if (characters[i-1] != 'c') {
-          characters[i] <- 'i'
-          characters[i+1] <- 'e'
-        }
-      }
+    if (characters[i] == 'e' & characters[i+1] == 'i' & characters[i-1] != 'c') {
+      characters[i] <- 'i'
+      characters[i+1] <- 'e'
     }
     # ensure space after punctuation
     if (characters[i] %in% c(',', '!'))
