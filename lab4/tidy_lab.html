@@ -238,21 +238,54 @@ str(whales)</code></pre>
                             size = as.integer(size),
                             ocean = tolower(as.character(ocean)))
 whales$outcome &lt;- replace(whales$outcome, whales$outcome==&quot;&quot;, NA)
-whales</code></pre>
+print(whales, n=1000)</code></pre>
 <pre><code>## # A tibble: 42 × 6
-##    observer  species       date outcome  size    ocean
-##       &lt;int&gt;    &lt;chr&gt;     &lt;dttm&gt;   &lt;chr&gt; &lt;int&gt;    &lt;chr&gt;
-## 1         1     blue 2015-01-20   death    NA   indian
-## 2         6     blue 2016-05-02    &lt;NA&gt;    80  pacific
-## 3        10     blue 2013-04-12   death    84  pacific
-## 4        19     blue 2010-07-24  injury    76  pacific
-## 5        26     blue 2015-09-06   death    30   indian
-## 6         2 humpback 2015-08-12   death    50 atlantic
-## 7         4 humpback 2012-03-04   death    56  pacific
-## 8         9 humpback 2015-10-30  injury    46 atlantic
-## 9        13 humpback 2016-09-17   death    24 atlantic
-## 10       17 humpback 2016-08-29    &lt;NA&gt;    NA  pacific
-## # ... with 32 more rows</code></pre>
+##    observer        species       date outcome  size    ocean
+##       &lt;int&gt;          &lt;chr&gt;     &lt;dttm&gt;   &lt;chr&gt; &lt;int&gt;    &lt;chr&gt;
+## 1         1           blue 2015-01-20   death    NA   indian
+## 2         6           blue 2016-05-02    &lt;NA&gt;    80  pacific
+## 3        10           blue 2013-04-12   death    84  pacific
+## 4        19           blue 2010-07-24  injury    76  pacific
+## 5        26           blue 2015-09-06   death    30   indian
+## 6         2       humpback 2015-08-12   death    50 atlantic
+## 7         4       humpback 2012-03-04   death    56  pacific
+## 8         9       humpback 2015-10-30  injury    46 atlantic
+## 9        13       humpback 2016-09-17   death    24 atlantic
+## 10       17       humpback 2016-08-29    &lt;NA&gt;    NA  pacific
+## 11       22       humpback 2012-04-13   death    39 atlantic
+## 12       28       humpback 2013-06-21  injury    51  pacific
+## 13        3 southern_right 2013-07-14  injury    47  pacific
+## 14       11 southern_right 2015-08-13   death    42  pacific
+## 15       15 southern_right 2014-08-25    &lt;NA&gt;    51 atlantic
+## 16       20 southern_right 2013-09-13    &lt;NA&gt;    61  pacific
+## 17       24 southern_right 2014-05-14   death    45  pacific
+## 18       29 southern_right 2013-06-14   death    42  pacific
+## 19       31 southern_right 2016-07-02  injury    41  pacific
+## 20        1            sei 2011-08-09  injury    NA   indian
+## 21        5            sei 2012-06-14  injury    52   indian
+## 22        8            sei 2013-08-12   death    61   indian
+## 23       14            sei 2010-09-15   death    58   indian
+## 24       22            sei 2013-04-20  injury    48   arctic
+## 25        2            fin 2013-08-02   death    76   arctic
+## 26        7            fin 2014-07-12    &lt;NA&gt;    NA   arctic
+## 27       12            fin 2016-06-12   death    81   arctic
+## 28       18            fin 2014-09-23  injury    NA   arctic
+## 29       10   killer_whale 2014-06-24   death    15  pacific
+## 30       23   killer_whale 2013-07-05   death    NA  pacific
+## 31        2        bowhead 2013-06-24  injury    30    artic
+## 32        7        bowhead 2013-06-25   death    45   arctic
+## 33       16        bowhead 2015-09-01  injury    NA   arctic
+## 34       21        bowhead 2013-08-21   death    51   arctic
+## 35       30        bowhead 2012-07-01  injury    49   arctic
+## 36        4           grey 2016-05-24   death    NA  pacific
+## 37       11           grey 2016-09-01  injury    48  pacific
+## 38       17           grey 2014-04-02   death    35  pacific
+## 39       23           grey 2010-09-05   death    45  pacific
+## 40       25           grey 2013-08-25   death    40  pacific
+## 41       27           grey 2015-07-13   death    14  pacific
+## 42       31           grey 2013-08-21    &lt;NA&gt;    39  pacific</code></pre>
+<pre class="r"><code>whales$ocean &lt;- replace(whales$ocean, whales$ocean==&quot;&quot;, NA)
+whales$species &lt;- replace(whales$species, whales$species==&quot;&quot;, NA)</code></pre>
 <p>hint: <code>parse_datetime</code></p>
 </div>
 <div id="q6" class="section level2">

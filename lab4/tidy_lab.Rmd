@@ -86,6 +86,9 @@ whales <- whales %>% mutate(observer = as.integer(observer),
                             size = as.integer(size),
                             ocean = tolower(as.character(ocean)))
 whales$outcome <- replace(whales$outcome, whales$outcome=="", NA)
+print(whales, n=1000)
+whales$ocean <- replace(whales$ocean, whales$ocean=="", NA)
+whales$species <- replace(whales$species, whales$species=="", NA)
 ```
 
 hint: `parse_datetime`
