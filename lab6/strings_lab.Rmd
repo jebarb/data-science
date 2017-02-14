@@ -12,7 +12,9 @@ These are admittedly dumb things to do to a classic book. We will learn much mor
 
 ```{r, message=F, warning=FALSE}
 library(tidyverse)
+library(stringr)
 text <- read_lines('https://raw.githubusercontent.com/idc9/stor390/master/data/dubliners.txt')
+text <- text[69:length(text)]
 ```
 
 
@@ -23,7 +25,17 @@ Extract the story *Araby* using positive look-aheads and look-behinds. You proba
 
 
 ```{r}
-#
+# In all of my years of programming, regex in R is the worst thing I've come across.
+# Seriously, who the hell thought it would be a good idea to vectorize regular expression operations?
+# Here's an answer that should work:
+# str_subset(text, "(?<=\n{4})ARABY(.|\n)*(?=\n{4})")
+# BUT IT DOESN'T BECAUSE R IS A SPECIAL SNOWFLAKE AND VECTORS ARE NEAT
+# so I'll hack my way around the issue
+text %>% 
+  str_c(collapse=";:") %>%
+  str_extract("(?<=(;:){4})ARABY.*(?=(;:){4})") %>%
+  str_split(";:")
+
 ```
 
 
@@ -32,7 +44,7 @@ How many words does the story contain? You can use the regular expression shortc
 
 
 ```{r}
-#
+sum(str_count(text, "\b\w+\b"))
 ```
 
 
@@ -41,7 +53,7 @@ Locate all instances of the word 'bazaar.'
 
 
 ```{r}
-#
+sum(str_count(tolower(text), "bazaar"))
 ```
 
 
@@ -51,14 +63,18 @@ What is the average word length?
 
 
 ```{r}
-#
+text %>% 
+  str_c(collapse=";:") %>%
+  str_extract_all("\w") %>%
+  lapply(length) %>%
+  mean()
 ```
 
 ## Question 5
 A madlibs-like task: Replace all instances of 'bazaar' with 'pirate ship.'
 
 ```{r}
-#
+# str_replace_all(text, "bazaar", "pirate ship")
 ```
 
 # Question 6
@@ -70,7 +86,7 @@ Consider y to be a consonant.
 
 
 ```{r}
-#
+# str_extract_all(text, "(?<=[^bcdfghjklmnpqrstvwxyz\-])[bcdfghjklmnpqrstvwxyz’\-](?=[^bcdfghjklmnpqrstvwxyz’\-])")
 ```
 
 
@@ -81,7 +97,7 @@ Extract sentences ending with exclamation points, excluding the exclamation poin
 You should use a single regular expression to handle all of this and return a single vector of output.
 
 ```{r}
-#
+# str_extract_all(text, "(?<=([^.]\.\s|.\n\n)).*!")
 ```
 
 
@@ -89,18 +105,18 @@ You should use a single regular expression to handle all of this and return a si
 
 Extract all words ending with 'ss.' The only tricky part is making sure the double-s is at the end of the word. 
 
-Use the word boundary regular expression, \text{\\b}, which matches the end or the beginning of words. An example with double l
+Use the word boundary regular expression, \text{\b}, which matches the end or the beginning of words. An example with double l
 
 ```{r, warning=FALSE}
 library(stringr)
 str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "began to smell"), "[a-z]+l{2}")
-str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "began to smell"), "[a-z]+l{2}\\b")
-str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "began to smell"), "\\bl{2}[a-z]+")
+str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "began to smell"), "[a-z]+l{2}\b")
+str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "began to smell"), "\bl{2}[a-z]+")
 ```
 
 
 ```{r}
-#
+# str_extract_all(text, "\B*ss(?=\b)")
 ```
 
 
@@ -110,6 +126,6 @@ Calculate the proportion of words beginning with T (capital or lower case) that 
 
 
 ```{r}
-#
+# length(str_extract_all(tolower(text), "\bthe\b"))/length(str_extract_all(tolower(text), "\bt"))
 ```
 
