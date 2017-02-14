@@ -14,7 +14,7 @@ These are admittedly dumb things to do to a classic book. We will learn much mor
 library(tidyverse)
 library(stringr)
 text <- read_lines('https://raw.githubusercontent.com/idc9/stor390/master/data/dubliners.txt')
-text <- text[69:length(text)]
+text <- text[69:(length(text)-357)]
 ```
 
 
@@ -33,9 +33,9 @@ Extract the story *Araby* using positive look-aheads and look-behinds. You proba
 # so I'll hack my way around the issue
 text %>% 
   str_c(collapse=";:") %>%
-  str_extract("(?<=(;:){4})ARABY.*(?=(;:){4})") %>%
+  str_extract("(?<=(;:){4})ARABY.*(?=(;:){4}EVELINE)")  %>%
+  unlist() %>%
   str_split(";:")
-
 ```
 
 
@@ -44,7 +44,9 @@ How many words does the story contain? You can use the regular expression shortc
 
 
 ```{r}
-sum(str_count(text, "\b\w+\b"))
+text %>%
+  str_count("\\w+") %>%
+  sum()
 ```
 
 
@@ -53,7 +55,10 @@ Locate all instances of the word 'bazaar.'
 
 
 ```{r}
-sum(str_count(tolower(text), "bazaar"))
+text %>%
+  tolower() %>%
+  str_count("bazaar") %>%
+  sum()
 ```
 
 
@@ -64,9 +69,9 @@ What is the average word length?
 
 ```{r}
 text %>% 
-  str_c(collapse=";:") %>%
-  str_extract_all("\w") %>%
-  lapply(length) %>%
+  str_extract_all("\\w+") %>%
+  lapply(str_length) %>%
+  unlist() %>%
   mean()
 ```
 
@@ -74,7 +79,7 @@ text %>%
 A madlibs-like task: Replace all instances of 'bazaar' with 'pirate ship.'
 
 ```{r}
-# str_replace_all(text, "bazaar", "pirate ship")
+str_replace_all(text, "bazaar", "pirate ship")
 ```
 
 # Question 6
@@ -86,7 +91,10 @@ Consider y to be a consonant.
 
 
 ```{r}
-# str_extract_all(text, "(?<=[^bcdfghjklmnpqrstvwxyz\-])[bcdfghjklmnpqrstvwxyz’\-](?=[^bcdfghjklmnpqrstvwxyz’\-])")
+text %>%
+  tolower() %>%
+  str_extract_all("(?<=[^bcdfghjklmnpqrstvwxyz])[bcdfghjklmnpqrstvwxyz]{2,}(?=[^bcdfghjklmnpqrstvwxyz])") %>% 
+  unlist()
 ```
 
 
@@ -97,7 +105,10 @@ Extract sentences ending with exclamation points, excluding the exclamation poin
 You should use a single regular expression to handle all of this and return a single vector of output.
 
 ```{r}
-# str_extract_all(text, "(?<=([^.]\.\s|.\n\n)).*!")
+text %>% 
+  str_c(collapse=" ") %>%
+  str_extract_all("[a-zA-Z]+([^\\.?“”!]|\\.{3})+(?=\\!)") %>%
+  unlist()
 ```
 
 
@@ -116,7 +127,8 @@ str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "
 
 
 ```{r}
-# str_extract_all(text, "\B*ss(?=\b)")
+str_extract_all(text, "\\w*s{2}\\b") %>%
+  unlist()
 ```
 
 
@@ -126,6 +138,15 @@ Calculate the proportion of words beginning with T (capital or lower case) that 
 
 
 ```{r}
-# length(str_extract_all(tolower(text), "\bthe\b"))/length(str_extract_all(tolower(text), "\bt"))
+text %>%
+  tolower() %>%
+  str_extract_all("\\bthe\\b") %>%
+  unlist() %>%
+  length() %>%
+  `/` (text %>%
+  tolower() %>%
+  str_extract_all("\\bt") %>%
+  unlist() %>%
+  length())
 ```
 
