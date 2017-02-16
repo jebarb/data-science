@@ -14,7 +14,8 @@ These are admittedly dumb things to do to a classic book. We will learn much mor
 library(tidyverse)
 library(stringr)
 text <- read_lines('https://raw.githubusercontent.com/idc9/stor390/master/data/dubliners.txt')
-text <- text[69:(length(text)-357)]
+# get rid of table of non-story elements
+text <- text[69:(length(text)-359)]
 ```
 
 
@@ -25,17 +26,12 @@ Extract the story *Araby* using positive look-aheads and look-behinds. You proba
 
 
 ```{r}
-# In all of my years of programming, regex in R is the worst thing I've come across.
-# Seriously, who the hell thought it would be a good idea to vectorize regular expression operations?
-# Here's an answer that should work:
-# str_subset(text, "(?<=\n{4})ARABY(.|\n)*(?=\n{4})")
-# BUT IT DOESN'T BECAUSE R IS A SPECIAL SNOWFLAKE AND VECTORS ARE NEAT
-# so I'll hack my way around the issue
 text %>% 
-  str_c(collapse=";:") %>%
-  str_extract("(?<=(;:){4})ARABY.*(?=(;:){4}EVELINE)")  %>%
+  str_c(collapse="\n") %>%
+  str_extract("(?<=(\\n){4})ARABY[^+]+?(?=([\\n]{4}[A-Z\\s]{4}|$))")  %>%
   unlist() %>%
-  str_split(";:")
+  str_split("\n") %>%
+  unlist()
 ```
 
 
@@ -93,7 +89,7 @@ Consider y to be a consonant.
 ```{r}
 text %>%
   tolower() %>%
-  str_extract_all("(?<=[^bcdfghjklmnpqrstvwxyz])[bcdfghjklmnpqrstvwxyz]{2,}(?=[^bcdfghjklmnpqrstvwxyz])") %>% 
+  str_extract_all("[bcdfghjklmnpqrstvwxyz]{2,}") %>% 
   unlist()
 ```
 
@@ -107,7 +103,7 @@ You should use a single regular expression to handle all of this and return a si
 ```{r}
 text %>% 
   str_c(collapse=" ") %>%
-  str_extract_all("[a-zA-Z]+([^\\.?“”!]|\\.{3})+(?=\\!)") %>%
+  str_extract_all("[a-zA-Z]([^\\.?“”!]|\\.{3})+(?=\\!)") %>%
   unlist()
 ```
 
@@ -127,13 +123,13 @@ str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "
 
 
 ```{r}
-str_extract_all(text, "\\w*s{2}\\b") %>%
+str_extract_all(tolower(text), "\\w*s{2}\\b") %>%
   unlist()
 ```
 
 
 # Question 9
- 
+
 Calculate the proportion of words beginning with T (capital or lower case) that are the word 'the.' You only need to return the proportion, giving it as a single number between zero and one.
 
 
@@ -144,9 +140,123 @@ text %>%
   unlist() %>%
   length() %>%
   `/` (text %>%
-  tolower() %>%
-  str_extract_all("\\bt") %>%
-  unlist() %>%
-  length())
+         tolower() %>%
+         str_extract_all("\\bt") %>%
+         unlist() %>%
+         length())
+```
+
+## Question 10
+Inspired by one of your classmates' attempt at question one: Reload the data and this time extract the story 'A painful case.' 
+
+You should do it like this:
+1. Turn the dataset into a data frame or tibble
+2. Find the row indices where the story starts and ends (or where the next one begins) using string matching. Use any means you want, but use a function not just a manual look-up.
+3. Use dplyr functions to subset the data frame so that it contains only 'A painful case,' excluding the next story's title.
+4. Collapse the data frame into a single string, e.g. using `str_c`.
+5. Store your output as an object named `painful.`
+
+Do not just copy your answer to question one and adapt it. Your answer should not have a bunch of weird slashes in it. If it does, try selecting the data frame column more carefully.
+```{r}
+painful <- text[69:length(text)] %>%
+  as_tibble() %>%
+  mutate(start=str_detect(value, "^A PAINFUL CASE$"), 
+         end=str_detect(value, "^IVY DAY IN THE COMMITTEE ROOM$")) %>%
+  slice(which(start):(which(end)-4)) %>%
+  .$value %>%
+  str_c(sep = " ")
+```
+
+
+## Question 11
+Write a function that takes the `Dubliners` text (as you download it from the link, not after collapsing as in the questions above) and a story title as its input and returns the story only---as we've seen above. 
+
+The returned story can include the story title or not. You can use any method you like to extract the stories.
+
+The function should be able to take any capitalization of the input. For example, no matter whether given "THE DEAD", "the dead" or "ThE DeaD" it should return the same story.
+
+Output should be a single string, as above. You can write several functions if you want to break up the work, but the final output needs to be in a single function. You can have more inputs to the function than those listed above if you want, but those two must be inputs.
+
+Define the function as `story.`
+
+**The point of this question** is to get you to think about how to put much if not all of what you do in R in terms of functions. That helps with reproducibility, consistency, accuracy and many other good things.
+
+HINT: One trouble you will run into here and in Q10: The words in all caps "A PAINFUL CASE" actually appear in the body of the text and not just as a story title. You can handle that any way you want, except by removing the offending text altogether.
+
+```{r}
+get_story <- function(name) {
+  text %>%
+    str_c(collapse="\n") %>%
+    str_extract(str_c("(?<=(\\n){4})", toupper(name), "[^+]+?(?=([\\n]{4}[A-Z\\s]{4}|$))")) %>%
+    unlist() %>%
+    str_split("\n") %>%
+    unlist()
+}
+get_story("the dead")
+```
+
+# Question 12
+1. Make a data frame or tibble in which each column is a story. The column names should be the names that appear in the table of contents---EXCEPT that spaces should be replaced with `_` and all names should be lower-case.
+
+You can do that using your story function above, or if you got stuck, you can do it manually or by any other means.
+
+It should have only one row: the full text of the story.
+
+
+Store your output as the object called `dubliners`
+
+HINT: If you are not doing this manually: Create an empty list, use a `for` loop for fill it, then name variables and make it a tibble or data frame.
+
+2. Using some tidy data functions we learned, modify `dubliners` to have two columns: one called `title` for story title, one called `text` for story text. Save over your result as `dubliners.`
+
+3. Add the following columns to `dubliners` with the column names exactly as given---using dplyr and string manipulation functions to do so
+
+a. Nc, giving the number of characters in the story (of any type)
+b. Nw, giving the number of words in the story. You can use the standard word regular expression and not worry about the fact that it will split up words with apostrophes and other punctuation. See the strings lecture for an example.
+c. Ns, giving the number of times the words "She" or "she" appear
+d. Nh, giving the number of times the words "He" or "he" appear
+
+
+```{r}
+stories <- c("THE SISTERS", "AN ENCOUNTER", "ARABY", "EVELINE", "AFTER THE RACE", "TWO GALLANTS", "THE BOARDING HOUSE", "A LITTLE CLOUD", "COUNTERPARTS", "CLAY", "A PAINFUL CASE", "IVY DAY IN THE COMMITTEE ROOM", "A MOTHER", "GRACE", "THE DEAD")
+dubliners <- stories %>%
+  lapply(get_story) %>%
+  lapply(str_c, collapse=" ") %>%
+  str_replace(stories, "") %>%
+  str_replace("^\\s*", "") %>%
+  lapply(unlist)
+names(dubliners) <- str_replace_all(stories, " ", "_")
+dubliners <- as_tibble(dubliners)
+dubliners <- dubliners %>% 
+  gather(key="title", value="text")
+# Couldn't get mutate to do this effectively, not sure why,
+# so I'm utilizing lapply to get around the issue 
+dubliners <- dubliners %>%
+  mutate(
+    Nc=text %>%
+      lapply(str_extract_all, ".") %>%
+      lapply(unlist) %>%
+      lapply(unique) %>%
+      lapply(length) %>%
+      unlist(),
+    Nw=text %>%
+      lapply(str_extract_all, "\\w+") %>%
+      lapply(unlist) %>%
+      lapply(unique) %>%
+      lapply(length) %>%
+      unlist(),
+    Ns=text %>%
+      tolower() %>%
+      lapply(str_extract_all, "she") %>%
+      lapply(unlist) %>%
+      lapply(length) %>%
+      unlist(),
+    Nh=text %>%
+      tolower() %>%
+      lapply(str_extract_all, "he") %>%
+      lapply(unlist) %>%
+      lapply(length) %>%
+      unlist())
+
 ```
 
