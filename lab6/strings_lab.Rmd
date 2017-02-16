@@ -26,12 +26,15 @@ Extract the story *Araby* using positive look-aheads and look-behinds. You proba
 
 
 ```{r}
-text %>% 
+araby <- text %>% 
   str_c(collapse="\n") %>%
-  str_extract("(?<=(\\n){4})ARABY[^+]+?(?=([\\n]{4}[A-Z\\s]{4}|$))")  %>%
+  str_extract("(?<=\\n{4})ARABY[^+]+?(?=(\\n{4}[A-Z\\s]{4}|$))")  %>%
   unlist() %>%
   str_split("\n") %>%
   unlist()
+head(araby)
+tail(araby)
+length(araby)
 ```
 
 
@@ -40,7 +43,7 @@ How many words does the story contain? You can use the regular expression shortc
 
 
 ```{r}
-text %>%
+araby %>%
   str_count("\\w+") %>%
   sum()
 ```
@@ -51,7 +54,7 @@ Locate all instances of the word 'bazaar.'
 
 
 ```{r}
-text %>%
+araby %>%
   tolower() %>%
   str_count("bazaar") %>%
   sum()
@@ -64,7 +67,7 @@ What is the average word length?
 
 
 ```{r}
-text %>% 
+araby %>% 
   str_extract_all("\\w+") %>%
   lapply(str_length) %>%
   unlist() %>%
@@ -75,7 +78,8 @@ text %>%
 A madlibs-like task: Replace all instances of 'bazaar' with 'pirate ship.'
 
 ```{r}
-str_replace_all(text, "bazaar", "pirate ship")
+res <- str_replace_all(araby, "bazaar", "pirate ship")
+head(res)
 ```
 
 # Question 6
@@ -87,10 +91,12 @@ Consider y to be a consonant.
 
 
 ```{r}
-text %>%
+res <- araby %>%
   tolower() %>%
   str_extract_all("[bcdfghjklmnpqrstvwxyz]{2,}") %>% 
   unlist()
+head(res)
+length(res)
 ```
 
 
@@ -101,8 +107,8 @@ Extract sentences ending with exclamation points, excluding the exclamation poin
 You should use a single regular expression to handle all of this and return a single vector of output.
 
 ```{r}
-text %>% 
-  str_c(collapse=" ") %>%
+araby %>% 
+  str_c(" ") %>%
   str_extract_all("[a-zA-Z]([^\\.?“”!]|\\.{3})+(?=\\!)") %>%
   unlist()
 ```
@@ -123,7 +129,7 @@ str_extract(c('the bellicose', 'hellebore', 'fell', "unwell", "and the llama", "
 
 
 ```{r}
-str_extract_all(tolower(text), "\\w*s{2}\\b") %>%
+str_extract_all(tolower(araby), "\\w*s{2}\\b") %>%
   unlist()
 ```
 
@@ -134,12 +140,12 @@ Calculate the proportion of words beginning with T (capital or lower case) that 
 
 
 ```{r}
-text %>%
+araby %>%
   tolower() %>%
   str_extract_all("\\bthe\\b") %>%
   unlist() %>%
   length() %>%
-  `/` (text %>%
+  `/` (araby %>%
          tolower() %>%
          str_extract_all("\\bt") %>%
          unlist() %>%
@@ -165,6 +171,9 @@ painful <- text[69:length(text)] %>%
   slice(which(start):(which(end)-4)) %>%
   .$value %>%
   str_c(sep = " ")
+head(painful)
+tail(painful)
+length(painful)
 ```
 
 
@@ -192,7 +201,10 @@ get_story <- function(name) {
     str_split("\n") %>%
     unlist()
 }
-get_story("the dead")
+res <- get_story("the dead")
+head(res)
+tail(res)
+length(res)
 ```
 
 # Question 12
@@ -257,6 +269,6 @@ dubliners <- dubliners %>%
       lapply(unlist) %>%
       lapply(length) %>%
       unlist())
-
+dubliners
+colnames(dubliners)
 ```
-
