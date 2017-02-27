@@ -6,7 +6,7 @@ output: html_document
 
 Assignment 2 is due 2/28/17. You can find the raw .Rmd file at: [https://raw.githubusercontent.com/idc9/stor390/master/assignments/harry_potter/harry_potter.Rmd](https://raw.githubusercontent.com/idc9/stor390/master/assignments/harry_potter/harry_potter.Rmd).
 
-The text of all 7 Harry Potter books is available online: [http://www.readfreeonline.net/Author/J._K._Rowling/Index.html](http://www.readfreeonline.net/Author/J._K._Rowling/Index.html). In this assignment you will use dplyr, ggplot and regular expressions to do an exploratory analysis of Harry Potter and the Philosopher's Stone.
+The text of all 7 Harry Potter books is available online: [http://www.readfreeonline.net/Author/J._K._Rowling/Index.html](http://www.readfreeonline.net/Author/J._K._Rowling/Index.html) (very possible the website is now defunct). In this assignment you will use dplyr, ggplot and regular expressions to do an exploratory analysis of Harry Potter and the Philosopher's Stone.
 
 Here are a couple examples of similar text analysis projects (that you will be able to do in a couple weeks!)
 
@@ -14,44 +14,10 @@ Here are a couple examples of similar text analysis projects (that you will be a
 
 - [Harry Potter agression](https://github.com/andrewheiss/Harry-Potter-aggression) by Andrew Heiss
 
-# Load the data
-The `rvest` package makes scraping websites easy with R. The following code will download the text of the Harry Potter and the Philosopher's Stone from readfreeonline and save it as a string (called `text`). I suggest running this code once then saving text on your computer and using `read_lines` to read the text file into your computer.
-
-```{r, eval=F}
-library(tidyverse)
-library(rvest)
-
-
-chapter_base_url <- 'http://www.readfreeonline.net/OnlineBooks/Harry_Potter_and_the_Sorcerers_Stone/Harry_Potter_and_the_Sorcerers_Stone_'
-num_chapters <- 17
-
-# download each chapter and concatonate them
-text <- ''
-for(i in 1:num_chapters){
-    
-    # url for the chapter text
-    chapter_url <- paste0(chapter_base_url, i, '.html')
-    
-    # download the chatpter html
-    chapter_html <- read_html(chapter_url)  
-    
-    # extract the text of the chatper from the html
-    chapter_text <- chapter_html %>%
-                html_nodes(".ContentCss") %>%
-                html_text()
-    
-    #
-    text <- paste0(text, chapter_text)
-}
-
-# save as a .txt file
-# write_lines(text, 'philosophers_stone.txt')
-```
-
 
 # Question 0
-Set `eval=FALSE` for the chunck above and `eval=TRUE`for the chunck below and all test chunks.
-```{r, eval=F, message=F, warning=F}
+Set `eval=FALSE` for the chunk above and `eval=TRUE`for the chunk below and all test chunks. The text file comes with the Sakai announcement.
+```{r, eval=T, message=F, warning=F}
 # set up
 library(tidyverse)
 library(stringr)
@@ -62,7 +28,9 @@ text <- read_file('philosophers_stone.txt')
 How many words are in the book? 
 
 ```{r}
-#
+text %>%
+  str_count("\\w+") %>%
+  sum()
 ```
 
 
@@ -70,7 +38,7 @@ How many words are in the book?
 
 How many times are each of the following characters mentioned? Display the answer using an appropriate visualization. 
 
-    - Harry, Hermione, Ron, Neville, Dumbledore, Draco, Snape, Hagrid, McGonagall
+- Harry, Hermione, Ron, Neville, Dumbledore, Draco, Snape, Hagrid, McGonagall
 
 
 *Hint*: the `map` function might be helpful (but not necessary).
@@ -78,6 +46,13 @@ How many times are each of the following characters mentioned? Display the answe
 
 ```{r}
 people <- c('Harry', 'Hermione', 'Ron', 'Neville', 'Dumbledore', 'Draco', 'Snape', 'Hagrid', 'McGonagall')
+characters <- tibble(name = factor(people), count = str_count(text, people))
+characters
+ggplot(characters, aes(x = name, y = count, fill = name)) +
+  geom_bar(stat = 'identity') +
+  theme(axis.ticks.x=element_blank(),
+        axis.text.x=element_blank())
+
 
 ```
 
@@ -87,11 +62,15 @@ people <- c('Harry', 'Hermione', 'Ron', 'Neville', 'Dumbledore', 'Draco', 'Snape
 
 
 # Question 3
-Break the text into paragraphs; create a verctor called `paragraphs` where each entry is a paragraph in the book.
+Break the text into paragraphs; create a vector called `paragraphs` where each entry is a paragraph in the book.
 
 
 ```{r}
-#
+# assume paragraphs end with \\\r\\\n
+paragraphs <- text %>%
+  str_c() %>%
+  str_split('\\r\\n') %>%
+  unlist()
 ```
 
 
@@ -103,14 +82,23 @@ This function does not need to be perfect. For sentences, give one example where
 *Hint*: the function should probably have a if statement
 ```{r}
 unnest_tokens <- function(text, token='words'){
-    # splits a string into tokens
-    # input
-        # text is a string
-        # token can be one of: words, paragraphs, sentences
-    # output: a character vector
-    
+  # splits a string into tokens
+  # input
+  # text is a string
+  # token can be one of: words, paragraphs, sentences
+  # output: a character vector
+  delimiter <- ''
+  if (token == 'words')
+    delimiter <- '[^a-zA-Z\']+'
+  else if (token == 'paragraphs')
+    delimiter <- '\\r\\n'
+  else if (token == 'sentences')
+    delimiter <- '(?<=[.?!])[\\s\\r\\n]+'
+  else return(NULL)
+  text %>%
+    str_split(delimiter) %>%
+    unlist()
 }
-
 ```
 
 
@@ -132,7 +120,9 @@ Put the data into tidy format with one row per paragraph.
 
 
 ```{r}
-#
+paragraph_df <- tibble(text = as.character(paragraphs), 
+                       index = 1:length(paragraphs),
+                       Harry = str_count(paragraphs, 'Harry'))
 ```
 
 *Hint*: you can use question 2 to check your answer
@@ -145,15 +135,18 @@ Write a function called `reference_counter` that generalizes question 5 for any 
 ```{r}
 
 reference_counter <- function(text_df, word_list){
-    
-    # inputs
-        # text_df is a tibble with a column called text
-        # word_list is a vector of strings
-    # for each word in word_list add a column to text_df counting
-    # the number of times that word appears in each row of text df
-    # does not modify the original text_df
-    # do this WITHOUT using dplyr
-
+  
+  # inputs
+  # text_df is a tibble with a column called text
+  # word_list is a vector of strings
+  # for each word in word_list add a column to text_df counting
+  # the number of times that word appears in each row of text df
+  # does not modify the original text_df
+  # do this WITHOUT using dplyr
+  res <- text_df
+  for (word in word_list)
+    res[[word]] <- str_count(res$text, word)
+  return(res)
 }
 ```
 
@@ -162,7 +155,6 @@ reference_counter <- function(text_df, word_list){
 # test code for grader
 test_words <- c('Harry', 'Hagrid', 'wand')
 test_df <- reference_counter(paragraph_df, test_words)
-
 test_df %>% select(Harry, Hagrid, wand) %>% summarise_all(sum)
 ```
 
@@ -174,7 +166,7 @@ Using the `reference_counter` function update `paragraph_df` to include columns 
 
 
 ```{r}
-#
+paragraph_df <- reference_counter(paragraph_df, people)
 ```
 
 
@@ -182,53 +174,69 @@ Using the `reference_counter` function update `paragraph_df` to include columns 
 ```{r test7, eval=F}
 # test code for grader
 paragraph_df[,people] %>% summarise_all(sum)
+paragraph_df
 ```
 
 
 # Question 8
 
-Make a new data frame called `person_refs`  with three columns: person, num_refs, index. num_refs is the number of references each person gets in paragraph and index is the index of the paragraph. Limit this data frame to the following 5 characteres: Harry, Hermione, Ron, Draco, Neville. 
+Make a new data frame called `person_refs`  with three columns: person, num_refs, index. num_refs is the number of references each person gets in paragraph and index is the index of the paragraph. Limit this data frame to the following 5 characters: Harry, Hermione, Ron, Draco, Neville. 
 
 *Hint*: use `gather`.
 
 ```{r}
-#
+person_refs <- paragraph_df %>%
+  select(index, Harry, Hermione, Ron, Draco, Neville) %>%
+  gather(Harry, Hermione, Ron, Draco, Neville,
+         key = 'person', value = 'num_refs')
 ```
 
 
 Make a bar plot showing the number of paragraphs that references each of the 5 characters
 
 ```{r}
-#
+ggplot(person_refs, aes(x = person, y = as.numeric(num_refs > 0))) +
+  geom_bar(stat = 'identity')
 ```
 
 
-Now we want to examine how characters evolove over "time." Plot the number of references vs. the paragraph index.
+Now we want to examine how characters evolve over "time." Plot the number of references vs. the paragraph index.
 
 ```{r}
-#
+ggplot(person_refs, aes(x = index, y = cumsum(num_refs), color = person)) + 
+  geom_line()
 ```
 
-In this question we are using paragraphs for "time windows." What are other "time windows" we could have used? What are some tradeoffs for these different choices.
+In this question we are using paragraphs for "time windows." What are other "time windows" we could have used? What are some trade offs for these different choices.
+
+We could have used lines, words or sentences. Lines or words would be more consistent as a method of "timekeeping" since the length is more consistent, but being smaller they would leave larger gaps in the data.
 
 # Question 9
 How often are Harry and Herminone referenced together? Plot the number of references per paragraph for Harry vs. Herminone.
 
 - one plot using `geom_point`
-- one plot using `geom_jitter` (usethe width/height arguments of jitter to make the jitter plot look better)
+- one plot using `geom_jitter` (use the width/height arguments of jitter to make the jitter plot look better)
 
 
 ```{r}
-#
+tmp <- paragraph_df %>%
+  filter(Harry > 0 & Hermione > 0)
+length(tmp$index)
+
+ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione'), aes(x = index, y = num_refs, color = person)) + 
+  geom_point()
 ```
 
 
 ```{r}
-#
+ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione'), aes(x = index, y = num_refs, color = person)) + 
+  geom_jitter(width = .3, height = .3)
 ```
 
 
 Why is the jitter plot better than a simple point plot?
+
+When both characters have the same number of mentions in a given paragraph, one of the points will cover the other, obscuring the data. The jitter eliminates this problem.
 
 
 # Question 10
@@ -236,45 +244,79 @@ Do Harry and Hermione tend to co-occur?  Fit a linear regression of Harry vs. He
 
 
 ```{r}
-#
+lm(Hermione ~ Harry, paragraph_df) %>%
+  summary()
 ```
 
 
 Now use `geom_smooth` to plot the linear regression line on top of the jitter plot.
 
 ```{r}
-#
+ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione'), aes(x = index, y = num_refs, color = person)) + 
+  geom_jitter(width = .3, height = .3) +
+  geom_smooth(color = 'black')
 ```
 
 
 # Question 11
-Is there are relationship between the length of the pargraph a the number of times Harry is mentioned? Add a column called `num_words` to `paragraph_df` counting the number of words in each paragraph. Then use a linear regression to answer for the question. Provide both a statistical summary and a visualization.
+Is there are relationship between the length of the paragraph a the number of times Harry is mentioned? Add a column called `num_words` to `paragraph_df` counting the number of words in each paragraph. Then use a linear regression to answer for the question. Provide both a statistical summary and a visualization.
 
 
 ```{r}
-#
+paragraph_df <- paragraph_df %>%
+  mutate(num_words = str_count(text, "\\w+"))
+lm(Harry ~ num_words, paragraph_df) %>%
+  summary()
+ggplot(paragraph_df, aes(x = num_words, y = Harry)) + 
+  geom_point() +
+  geom_smooth()
+
 ```
 
 # Question 12
-Create an indeicator variable `harry_mentioned` that indicates whether or not Harry is mentioned in each paragraph. This indicator variable should be a factor (e.g. use `as.factor`).
+Create an indicator variable `harry_mentioned` that indicates whether or not Harry is mentioned in each paragraph. This indicator variable should be a factor (e.g. use `as.factor`).
 
 ```{r}
-#
+paragraph_df <- paragraph_df %>%
+  mutate(harry_mentioned = as.factor(Harry > 0))
+paragraph_df
+person_refs
 ```
 
-Now repeate the previous linear regression with `harry_mentioned` as the x variable instead of the number of times he is mentioned
+Now repeat the previous linear regression with `harry_mentioned` as the x variable instead of the number of times he is mentioned
 
 ```{r}
-#
+lm(num_words ~ harry_mentioned, paragraph_df) %>%
+  summary()
+ggplot(paragraph_df, aes(x = harry_mentioned, y = num_words)) + 
+  geom_point() +
+  geom_smooth()
 ```
 
 
 # Free response
-Ask and answer a question with this data set. You should make at least 2 figures (e.g. plot, printout of a regression, etc). Provide a written explaination of the question and the evidence for your answer.
+Ask and answer a question with this data set. You should make at least 2 figures (e.g. plot, printout of a regression, etc). Provide a written explanation of the question and the evidence for your answer.
 
 
+I'd like to see if the presence of Hermione along with Harry in a paragraph is a predictor of the presense of Ron.
 
+``` {r}
+paragraph_df <- paragraph_df %>%
+  mutate(harry_ron_mentioned = as.factor(Harry > 0 & Ron > 0))
+paragraph_df <- paragraph_df %>%
+  mutate(hermione_mentioned = as.factor(Hermione > 0))
 
+ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione' | person == 'Ron'), aes(x = index, y = num_refs, color = person)) + 
+  geom_jitter(width = .3, height = .3) +
+  geom_smooth(color = 'black')
+
+ggplot(paragraph_df, aes(x = harry_ron_mentioned, y = Hermione)) + 
+  geom_jitter(width = .3, height = .3) +
+
+tmp <- lm(Hermione ~ Harry + Ron, filter(paragraph_df, Harry > 0 & Ron > 0))
+  summary(tmp)
+  plot(tmp)
+```
 
 
 
