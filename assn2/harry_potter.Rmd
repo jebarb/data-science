@@ -52,8 +52,7 @@ ggplot(characters, aes(x = name, y = count, fill = name)) +
   geom_bar(stat = 'identity') +
   theme(axis.ticks.x=element_blank(),
         axis.text.x=element_blank())
-
-
+# Left names off to side as there was an overlap when they were below the bars
 ```
 
 
@@ -87,6 +86,11 @@ unnest_tokens <- function(text, token='words'){
   # text is a string
   # token can be one of: words, paragraphs, sentences
   # output: a character vector
+  #
+  # for sentences, the function won't split properly for abreviated words,
+  # e.g. e.g. or for titles, such as Mrs.
+  # will also have undesireable behavior with quotes, 
+  # such as 'Harry said "Hello!"' cutting off the last double quote 
   delimiter <- ''
   if (token == 'words')
     delimiter <- '[^a-zA-Z\']+'
@@ -99,6 +103,7 @@ unnest_tokens <- function(text, token='words'){
     str_split(delimiter) %>%
     unlist()
 }
+
 ```
 
 
@@ -203,8 +208,8 @@ ggplot(person_refs, aes(x = person, y = as.numeric(num_refs > 0))) +
 Now we want to examine how characters evolve over "time." Plot the number of references vs. the paragraph index.
 
 ```{r}
-ggplot(person_refs, aes(x = index, y = cumsum(num_refs), color = person)) + 
-  geom_line()
+ggplot(person_refs, aes(x = index, y = num_refs, color = person)) + 
+  geom_jitter()
 ```
 
 In this question we are using paragraphs for "time windows." What are other "time windows" we could have used? What are some trade offs for these different choices.
@@ -258,6 +263,9 @@ ggplot(paragraph_df, aes(x = Harry, y = Hermione)) +
 ```
 
 
+Hermione does tend to co-occur with Harry
+
+
 # Question 11
 Is there are relationship between the length of the paragraph a the number of times Harry is mentioned? Add a column called `num_words` to `paragraph_df` counting the number of words in each paragraph. Then use a linear regression to answer for the question. Provide both a statistical summary and a visualization.
 
@@ -269,9 +277,11 @@ lm(Harry ~ num_words, paragraph_df) %>%
   summary()
 ggplot(paragraph_df, aes(x = num_words, y = Harry)) + 
   geom_point() +
-  geom_smooth()
+  geom_smooth(method = 'lm')
 
 ```
+
+There does seem to be a relationship between paragraph length and number of times Harry is mentioned in a paragraph
 
 # Question 12
 Create an indicator variable `harry_mentioned` that indicates whether or not Harry is mentioned in each paragraph. This indicator variable should be a factor (e.g. use `as.factor`).
@@ -298,7 +308,7 @@ ggplot(paragraph_df, aes(x = harry_mentioned, y = num_words)) +
 Ask and answer a question with this data set. You should make at least 2 figures (e.g. plot, printout of a regression, etc). Provide a written explanation of the question and the evidence for your answer.
 
 
-I'd like to see if the presence of Ron along with Harry in a paragraph is a predictor of the presense of Hermione
+I'd like to see if the presence of both Ron and Harry in a paragraph is a predictor of the presense of Hermione.
 
 ``` {r}
 paragraph_df <- paragraph_df %>%
@@ -307,14 +317,12 @@ paragraph_df <- paragraph_df %>%
   filter()
 
 ggplot(paragraph_df, aes(x = harry_ron_mentioned, y = Hermione)) + 
-  geom_jitter(width = .2, height = .3) +
-  geom_smooth()
+  geom_jitter(width = .2, height = .3)
 
-lm(Hermione ~ Harry + Ron, filter(paragraph_df, Harry > 0 & Ron > 0)) %>%
+lm(Hermione ~ harry_ron_mentioned, paragraph_df) %>%
   summary()
 ```
 
-
-
+The linear model indicates that there does appear to be a relationship between Hermione being mentioned alongside Ron and Harry.
 
 
