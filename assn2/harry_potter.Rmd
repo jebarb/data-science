@@ -223,13 +223,13 @@ tmp <- paragraph_df %>%
   filter(Harry > 0 & Hermione > 0)
 length(tmp$index)
 
-ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione'), aes(x = index, y = num_refs, color = person)) + 
+ggplot(paragraph_df, aes(x = Harry, y = Hermione)) + 
   geom_point()
 ```
 
 
 ```{r}
-ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione'), aes(x = index, y = num_refs, color = person)) + 
+ggplot(paragraph_df, aes(x = Harry, y = Hermione)) + 
   geom_jitter(width = .3, height = .3)
 ```
 
@@ -252,9 +252,9 @@ lm(Hermione ~ Harry, paragraph_df) %>%
 Now use `geom_smooth` to plot the linear regression line on top of the jitter plot.
 
 ```{r}
-ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione'), aes(x = index, y = num_refs, color = person)) + 
+ggplot(paragraph_df, aes(x = Harry, y = Hermione)) + 
   geom_jitter(width = .3, height = .3) +
-  geom_smooth(color = 'black')
+  geom_smooth(method = 'lm')
 ```
 
 
@@ -289,7 +289,7 @@ Now repeat the previous linear regression with `harry_mentioned` as the x variab
 lm(num_words ~ harry_mentioned, paragraph_df) %>%
   summary()
 ggplot(paragraph_df, aes(x = harry_mentioned, y = num_words)) + 
-  geom_point() +
+  geom_jitter(width = .2) +
   geom_smooth()
 ```
 
@@ -298,24 +298,20 @@ ggplot(paragraph_df, aes(x = harry_mentioned, y = num_words)) +
 Ask and answer a question with this data set. You should make at least 2 figures (e.g. plot, printout of a regression, etc). Provide a written explanation of the question and the evidence for your answer.
 
 
-I'd like to see if the presence of Hermione along with Harry in a paragraph is a predictor of the presense of Ron.
+I'd like to see if the presence of Ron along with Harry in a paragraph is a predictor of the presense of Hermione
 
 ``` {r}
 paragraph_df <- paragraph_df %>%
-  mutate(harry_ron_mentioned = as.factor(Harry > 0 & Ron > 0))
-paragraph_df <- paragraph_df %>%
-  mutate(hermione_mentioned = as.factor(Hermione > 0))
-
-ggplot(filter(person_refs, person == 'Harry' | person == 'Hermione' | person == 'Ron'), aes(x = index, y = num_refs, color = person)) + 
-  geom_jitter(width = .3, height = .3) +
-  geom_smooth(color = 'black')
+  mutate(harry_ron_mentioned = as.factor(Harry > 0 & Ron > 0), 
+         hermione_mentioned = as.factor(Hermione > 0)) %>%
+  filter()
 
 ggplot(paragraph_df, aes(x = harry_ron_mentioned, y = Hermione)) + 
-  geom_jitter(width = .3, height = .3) +
+  geom_jitter(width = .2, height = .3) +
+  geom_smooth()
 
-tmp <- lm(Hermione ~ Harry + Ron, filter(paragraph_df, Harry > 0 & Ron > 0))
-  summary(tmp)
-  plot(tmp)
+lm(Hermione ~ Harry + Ron, filter(paragraph_df, Harry > 0 & Ron > 0)) %>%
+  summary()
 ```
 
 
