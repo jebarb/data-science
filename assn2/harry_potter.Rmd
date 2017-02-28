@@ -209,7 +209,7 @@ Now we want to examine how characters evolve over "time." Plot the number of ref
 
 ```{r}
 ggplot(person_refs, aes(x = index, y = num_refs, color = person)) + 
-  geom_jitter()
+  geom_line()
 ```
 
 In this question we are using paragraphs for "time windows." What are other "time windows" we could have used? What are some trade offs for these different choices.
@@ -228,13 +228,13 @@ tmp <- paragraph_df %>%
   filter(Harry > 0 & Hermione > 0)
 length(tmp$index)
 
-ggplot(paragraph_df, aes(x = Harry, y = Hermione)) + 
+ggplot(paragraph_df, aes(x = Hermione, y = Harry)) + 
   geom_point()
 ```
 
 
 ```{r}
-ggplot(paragraph_df, aes(x = Harry, y = Hermione)) + 
+ggplot(paragraph_df, aes(x = Hermione, y = Harry)) + 
   geom_jitter(width = .3, height = .3)
 ```
 
@@ -249,7 +249,7 @@ Do Harry and Hermione tend to co-occur?  Fit a linear regression of Harry vs. He
 
 
 ```{r}
-lm(Hermione ~ Harry, paragraph_df) %>%
+lm(Harry ~ Hermione, paragraph_df) %>%
   summary()
 ```
 
@@ -257,13 +257,13 @@ lm(Hermione ~ Harry, paragraph_df) %>%
 Now use `geom_smooth` to plot the linear regression line on top of the jitter plot.
 
 ```{r}
-ggplot(paragraph_df, aes(x = Harry, y = Hermione)) + 
+ggplot(paragraph_df, aes(x = Hermione, y = Harry)) + 
   geom_jitter(width = .3, height = .3) +
   geom_smooth(method = 'lm')
 ```
 
 
-Hermione does tend to co-occur with Harry
+Harry may tend to co-occur with Hermione but the relationship doesn't seem to be substantial
 
 
 # Question 11
@@ -323,6 +323,6 @@ lm(Hermione ~ harry_ron_mentioned, paragraph_df) %>%
   summary()
 ```
 
-The linear model indicates that there does appear to be a relationship between Hermione being mentioned alongside Ron and Harry.
+The linear model indicates that there does appear to be a relationship between Hermione being mentioned alongside Ron and Harry. However, that relationship doesn't seem to be a reliable predictor of Hermione's presence.
 
 
