@@ -74,6 +74,18 @@ hour11 <- read_csv('https://raw.githubusercontent.com/idc9/stor390/master/data/b
 
 # x data from 2012
 hour12_x <- read_csv('https://raw.githubusercontent.com/idc9/stor390/master/data/bikes_12_x.csv')
+
+# set categorical variables to factors
+hour11 <- hour11 %>% 
+            mutate(workingday=factor(workingday),
+                   weathersit=factor(weathersit),
+                   weekday=factor(weekday))
+
+# set categorical variables to factors
+hour12_x <- hour12_x %>% 
+            mutate(workingday=factor(workingday),
+                   weathersit=factor(weathersit),
+                   weekday=factor(weekday))
 ```
 
 
@@ -115,24 +127,36 @@ summary(hour11)
 # plot weather vs count
 ggplot(hour11, mapping = aes(x = weathersit, y = cnt)) + 
   geom_jitter()
+```
+As expected, as weather conditions worsen, ridership decreases.
+
+```{r}
+# hour
+ggplot(hour11, mapping = aes(x = hr, y = cnt)) + 
+  geom_jitter()
+# day
+ggplot(hour11, mapping = aes(x = weekday, y = cnt, color = workingday)) + 
+  geom_jitter()
+# month
+ggplot(hour11, mapping = aes(x = mnth, y = cnt)) + 
+  geom_jitter()
+# season, odd season defs
+ggplot(hour11, mapping = aes(x = season, y = cnt)) + 
+  geom_jitter()
+# humidity
+ggplot(hour11, mapping = aes(x = hum, y = cnt)) + 
+  geom_point()
 # windspeed
 ggplot(hour11, mapping = aes(x = windspeed, y = cnt)) + 
   geom_jitter()
 # tmp
 ggplot(hour11, mapping = aes(x = atemp, y = cnt)) + 
   geom_jitter()
-# hum
+# humidity
 ggplot(hour11, mapping = aes(x = hum, y = cnt)) + 
   geom_point()
-
-hum_atemp_lm <- lm(cnt ~ hum + atemp, hour11)
-summary(hum_atemp_lm)
-plot(hum_atemp_lm, which = 1:2)
-
-cnt_month_lm <- lm(atemp ~ cnt + mnth, hour11)
-summary(cnt_month_lm)
-plot(cnt_month_lm, which = 1:2)
-
-
+# holiday vs ridership
+ggplot(hour11, mapping = aes(x = holiday, y = cnt, color = casual)) + 
+  geom_jitter()
 ```
 

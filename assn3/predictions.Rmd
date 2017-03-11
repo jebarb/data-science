@@ -1,0 +1,111 @@
+---
+title: "Prediction"
+author: "James Barbour"
+date: "3/10/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(MASS)
+```
+
+
+```{r}
+# data from 2011
+hour <- read_csv('https://raw.githubusercontent.com/idc9/stor390/master/data/bikes_2011.csv')
+
+# x data from 2012
+hour12_x <- read_csv('https://raw.githubusercontent.com/idc9/stor390/master/data/bikes_12_x.csv')
+
+# set categorical variables to factors
+hour <- hour %>% 
+  mutate(workingday=factor(workingday),
+         weathersit=factor(weathersit),
+         weekday=factor(weekday))
+
+# set categorical variables to factors
+hour12_x <- hour12_x %>% 
+  mutate(workingday=factor(workingday),
+         weathersit=factor(weathersit),
+         weekday=factor(weekday))
+```
+
+```{r}
+linear_model <- lm(cnt ~ hr, hour)
+results <- tibble(cnt_actual = hour$cnt,
+                  cnt_pred=linear_model$fitted.values)
+
+results %>% 
+  mutate(resid=cnt_actual - cnt_pred) %>% 
+  mutate(resid_sq = resid^2) %>% 
+  summarise(MSE=mean(resid_sq))
+
+```
+
+```{r}
+# get test/train samples
+n <- dim(hour)[1]
+n_tr <- floor(n * .8)
+tr_indices <- sample(x=1:n, size=n_tr, replace=FALSE)
+train <- hour[tr_indices, ]
+test <- hour[-tr_indices, ]
+
+# test each combination of predictors and interactions, pick best
+#model <- lm(cnt ~ dteday + season + yr + mnth + hr + holiday + weekday + workingday + weathersit + temp + atemp + hum + windspeed, train)
+#model <- lm(cnt ~ .*., train)
+#model_test <- stepAIC(model, direction = 'both')
+#model_test$anova
+```
+
+```{r}
+# found best combination of predictors for test data, remove unneeded variables
+model <- lm(cnt ~ dteday + season + mnth + hr + holiday + weathersit + temp + 
+              hum + windspeed + dteday:season + dteday:mnth + dteday:holiday + 
+              dteday:weathersit + dteday:temp + dteday:hum + dteday:windspeed + 
+              season:mnth + season:hr + season:holiday + season:temp + 
+              season:hum + mnth:holiday + mnth:hum + mnth:windspeed + hr:temp + 
+              hr:hum + holiday:temp + holiday:hum + weathersit:hum + weathersit:windspeed + 
+              temp:windspeed + hum:windspeed, train)
+
+cnt_pred <- predict(model, newdata = hour)
+hour <- hour %>%
+  mutate(cnt_pred = cnt_pred)
+head(hour)
+ggplot(data=train) +
+  geom_point(aes(x=hr, y=cnt))
+ggplot(data=train) +
+  geom_point(aes(x=hr, y=cnt_pred))
+```
+
+```{r}
+# largest degree polynomial to try
+d_max <- 21
+
+# lets save each model we fit in a list
+models <- list()
+
+# also store the traing error in data frame
+error <- tibble(degree=1:d_max,
+                MSE_tr = rep(0, d_max))
+
+# fit all the models
+for(d in 1:d_max){
+  # the poly function does exactly what you think it does
+  # models[[d]] <- lm(cnt ~ poly(hr, d), train)
+  models[[d]] <- lm(cnt ~ poly(hr, d), train)
+  
+  # compute the MSE for the training data
+  mse_tr <- mean(models[[d]]$residuals^2)
+  
+  # save the MSE
+  error[d, 'MSE_tr'] <- mse_tr
+}
+
+error
+
+ggplot(error)+
+  geom_point(aes(x=degree, y=MSE_tr)) +
+  geom_line(aes(x=degree, y=MSE_tr))
+```
