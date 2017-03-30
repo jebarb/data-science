@@ -21,15 +21,17 @@ test <- read_csv('https://raw.githubusercontent.com/idc9/stor390/master/data/hum
 
 # only consider walking upstairs vs downstairs
 train <- train %>% 
-  filter(activity == 2 | activity == 3)
+  rename(y = activity) %>%
+  filter(y == 2 | y == 3)
 
 test <- test %>% 
-  filter(activity == 2 | activity == 3)
+  rename(y = activity) %>%
+  filter(y == 2 | y == 3)
 
-# train$activity[train$activity == 2] <- -1
-# train$activity[train$activity == 3] <- 1
-# test$activity[test$activity == 2] <- -1
-# test$activity[test$activity == 3] <- 1
+# train$y[train$y == 2] <- -1
+# train$y[train$y == 3] <- 1
+# test$y[test$y == 2] <- -1
+# test$y[test$y == 3] <- 1
 
 # subsample the data
 set.seed(8599)
@@ -54,10 +56,10 @@ knn_tuning_error_plot <- function(train, test, k_cv, k_values, cv_seed=NA) {
     set.seed(cv_seed)
   }
   
-  train_x <- train %>% select(-activity)
-  train_y <- train$activity
-  test_x <- test %>% select(-activity)
-  test_y <- test$activity
+  train_x <- train %>% select(-y)
+  train_y <- train$y
+  test_x <- test %>% select(-y)
+  test_y <- test$y
   
   test_error <- lapply(k_values, function(k) mean(knn(train_x, test_x, train_y, k) != test_y)) %>%
     unlist()
@@ -91,11 +93,11 @@ knn_tuning_error_plot <- function(train, test, k_cv, k_values, cv_seed=NA) {
     
     # break the train/test data into x matrix and y vectors
     # this formatting is useful for the knn() functions
-    cv_tr_x <- cv_tr_data %>% select(-activity)
-    cv_tr_y <- cv_tr_data$activity
+    cv_tr_x <- cv_tr_data %>% select(-y)
+    cv_tr_y <- cv_tr_data$y
     
-    cv_tst_x <- cv_tst_data %>% select(-activity)
-    cv_tst_y <- cv_tst_data$activity # turn into a vector
+    cv_tst_x <- cv_tst_data %>% select(-y)
+    cv_tst_y <- cv_tst_data$y # turn into a vector
     
     # for each value of k
     for(i in 1:num_k){
@@ -133,7 +135,7 @@ knn_tuning_error_plot <- function(train, test, k_cv, k_values, cv_seed=NA) {
 ```
 
 ```{r, echo=F}
-nearest_centroid <- function(train, test_x){
+nearest_centroid <- function(train, test){
   # returns the predictions for nearest centroid on a test set
   # train_x and test_x: are the train/test x data
   # assume these are both numerical matrices with the same number of columns
@@ -141,21 +143,21 @@ nearest_centroid <- function(train, test_x){
   # return a vector of predicted class labels for the test data
   # fit_mean_difference() ???
   obs_means <- train %>%
-    group_by(activity) %>%
+    group_by(y) %>%
     summarize_all(mean)
   
   mean_pos <- select(filter(obs_means, y == 2), -y)
   mean_neg <- select(filter(obs_means, y == 3), -y)
   
-  test_x <- test_x %>%
+  test <- test %>%
     add_column(
-      dist_pos = apply(test_x, 1, function(x) sqrt(sum((x - mean_pos)^2))),
-      dist_neg = apply(test_x, 1, function(x) sqrt(sum((x - mean_neg)^2)))
+      dist_pos = apply(test, 1, function(x) sqrt(sum((x - mean_pos)^2))),
+      dist_neg = apply(test, 1, function(x) sqrt(sum((x - mean_neg)^2)))
     )
   
-  test_x %>% 
+  test %>% 
     mutate(y_pred = ifelse(dist_pos < dist_neg, 3, 2)) %>% 
-    mutate(y_pred = factor(y_pred)) 
+    as_tibble()
 }
 ```
 
@@ -164,10 +166,10 @@ nearest_centroid <- function(train, test_x){
 k_values <- seq(from=1, to=41, by=2)
 
 # Q1: KNN Test set error --------------------------------------------------
-train_x <- train %>% select(-activity)
-train_y <- train$activity
-test_x <- test %>% select(-activity)
-test_y <- test$activity
+train_x <- train %>% select(-y)
+train_y <- train$y
+test_x <- test %>% select(-y)
+test_y <- test$y
 
 # 1a:
 test_error <- lapply(k_values, function(k) mean(knn(train_x, test_x, train_y, k) != test_y)) %>%
@@ -202,11 +204,11 @@ for(m in 1:M){
   
   # break the train/test data into x matrix and y vectors
   # this formatting is useful for the knn() functions
-  cv_tr_x <- cv_tr_data %>% select(-activity)
-  cv_tr_y <- cv_tr_data$activity
+  cv_tr_x <- cv_tr_data %>% select(-y)
+  cv_tr_y <- cv_tr_data$y
   
-  cv_tst_x <- cv_tst_data %>% select(-activity)
-  cv_tst_y <- cv_tst_data$activity # turn into a vector
+  cv_tst_x <- cv_tst_data %>% select(-y)
+  cv_tst_y <- cv_tst_data$y # turn into a vector
   
   # for each value of k
   for(i in 1:num_k){
@@ -242,7 +244,7 @@ error_df %>%
 # 1c:
 # The best value of K is 2
 
-# 1d:
+# 1d:                                                                   !!!!!!ANSER THIS!!!!!!!!
 
 # Q2: What happens when we change the number of folds ---------------------
 # 2a:
@@ -263,47 +265,125 @@ error_df %>%
 # 2d:
 lapply(c(5, 10, 20, 50), function(x) knn_tuning_error_plot(train, test, x, k_values, 8599))
 
-
 # Q3: Nearest Centroid ----------------------------------------------------
 # 3a: see above
 # 3b:
-res <- nearest_centroid(train, test_x)
-res
-```
+# train error
+centroid_train <- nearest_centroid(train, train)
+centroid_train %>% 
+  summarise(error = mean(y != y_pred))
 
-```{r}
+# test error
+centroid_test <- nearest_centroid(train, test)
+centroid_test %>% 
+  summarise(error = mean(y != y_pred))
+
 # Q4: Linear SVM ----------------------------------------------------------
+train_y <- factor(train_y)
 C_values <- tibble(C=10^seq(from=-5, to=5, by=1))
 
-trControl_5_fold <- trainControl(method = "cv",
-                          number = 5)
-
-trControl_10_fold <- trainControl(method = "cv",
-                          number = 10)
-
-tune_grid <- expand.grid(C=C_values,
-                         degree=c(1),
-                         scale=1)
+prev_w = oldw <- getOption("warn")
+options(warn = -1)
 
 # fit the SVM model
-tuned_svm_5_fold <- train(x=train_x,
-                   y=train_y,
-                   tuneGrid = tune_grid,
-                   trControl = trControl,
-                   method = "svmLinear")
+tuned_svm_5_fold <- train(x = train_x,
+                          y = train_y,
+                          method = "svmLinear",
+                          tuneGrid = C_values,
+                          trControl = trainControl(method = "cv", number = 5),
+                          metric = "Accuracy")
 
-tuned_svm_5_fold <- train(x=train_x,
-                   y=train_y,
-                   method = "svmPoly",
-                   tuneGrid = tune_grid,
-                   trControl = trControl,
-                   method = "svmLinear")
+tuned_svm_10_fold <- train(x = train_x,
+                           y = train_y,
+                           method = "svmLinear",
+                           tuneGrid = C_values,
+                           trControl = trainControl(method = "cv", number = 10),
+                           metric = "Accuracy")
 
-tuned_svm
+options(warn = oldw)
 
-trControl <- trainControl(method = "cv", # perform cross validation
-                          number = 5)
+tuned_svm_5_fold$bestTune
+tuned_svm_10_fold$bestTune
+tuned_svm_5_fold
+tuned_svm_10_fold
 
+# Best model: C = 1e-2, 10 folds
+
+svmfit <- svm(y ~ .,
+              data=train,
+              cost=.01,
+              scale=FALSE,
+              type='C-classification',
+              shrinking=FALSE,
+              kernel='linear') 
+svmfit
+
+# train error
+svm_train_predictions <- predict(svmfit, newdata = train)
+train %>% 
+  mutate(svm_y_pred = svm_train_predictions) %>%
+  summarise(error = mean(y != svm_y_pred))
+
+# test error
+svm_test_predictions <- predict(svmfit, newdata = test)
+test %>% 
+  mutate(svm_y_pred = svm_test_predictions) %>% 
+  summarise(error = mean(y != svm_y_pred))
 
 # Q5: Radial Kernel SVM ---------------------------------------------------
+tune_grid <- expand.grid(C = 10^seq(from=-5, to=5, by=1),
+                         sigma = 10^seq(from=-5, to=5, by=1))
+
+oldw <- getOption('warn')
+options(warn = -1)
+
+# fit the SVM model
+tuned_svm_rad <- train(x = train_x,
+                       y = train_y,
+                       method = "svmRadial",
+                       tuneGrid = tune_grid,
+                       trControl = trainControl(method = "cv", number = 5),
+                       metric = "Accuracy")
+
+
+options(warn = oldw)
+
+tuned_svm_rad$bestTune
+tuned_svm_rad
+
+# Best model: sigma = 0.001, C = 10, 10 folds
+svmfit_rad <- svm(y ~ .,
+                  data=train,
+                  cost=10,
+                  sigma=0.001,
+                  scale=FALSE,
+                  type='C-classification',
+                  shrinking=FALSE,
+                  kernel='radial') 
+svmfit_rad
+
+# train error
+svm_rad_train_predictions <- predict(svmfit, newdata = train)
+train %>% 
+  mutate(svm_rad_y_pred = svm_rad_train_predictions) %>%
+  summarise(error = mean(y != svm_rad_y_pred))
+
+# test error
+svm_rad_test_predictions <- predict(svmfit_rad, newdata = test)
+test %>% 
+  mutate(svm_rad_y_pred = svm_rad_test_predictions) %>% 
+  summarise(error = mean(y != svm_rad_y_pred))
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
