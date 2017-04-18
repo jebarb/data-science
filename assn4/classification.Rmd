@@ -7,13 +7,12 @@ output: html_document
 
 
 ```{r, message=FALSE, warning=F}
-library(tidyverse)
-
-library(class) # KNN
-library(e1071) # SVM
-library(kernlab) # kernel SVM
-library(caret) # tuning
-library(stringr)
+require(tidyverse)
+require(class)
+require(e1071)
+require(kernlab)
+require(caret)
+require(stringr)
 
 train <- read_csv('https://raw.githubusercontent.com/idc9/stor390/master/data/human_activity_train.csv')
 
@@ -174,6 +173,7 @@ test_y <- test$y
 # 1a:
 test_error <- lapply(k_values, function(k) mean(knn(train_x, test_x, train_y, k) != test_y)) %>%
   unlist()
+test_error
 
 # number of cross-validation folds
 M <- 10
@@ -244,12 +244,16 @@ error_df %>%
 # 1c:
 # The best value of K is 2
 
-# 1d:                                                                   !!!!!!ANSER THIS!!!!!!!!
+# 1d:
+# test validation remains fairly consistent between 0.13 and 0.21, 
+# but cross-validation increases from 0.1 to 0.25. Does come fairly close
+# to test validation between k=10 and k=23
 
 # Q2: What happens when we change the number of folds ---------------------
 # 2a:
 train_error <- lapply(k_values, function(k) mean(knn(train_x, train_x, train_y, k) != train_y)) %>%
   unlist()
+train_error
 
 # 2b:
 error_df <- error_df %>%
@@ -349,7 +353,6 @@ tuned_svm_rad <- train(x = train_x,
 options(warn = oldw)
 
 tuned_svm_rad$bestTune
-tuned_svm_rad
 
 # Best model: sigma = 0.001, C = 10, 10 folds
 svmfit_rad <- svm(y ~ .,
@@ -363,7 +366,7 @@ svmfit_rad <- svm(y ~ .,
 svmfit_rad
 
 # train error
-svm_rad_train_predictions <- predict(svmfit, newdata = train)
+svm_rad_train_predictions <- predict(svmfit_rad, newdata = train)
 train %>% 
   mutate(svm_rad_y_pred = svm_rad_train_predictions) %>%
   summarise(error = mean(y != svm_rad_y_pred))

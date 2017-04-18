@@ -1,0 +1,125 @@
+---
+title: 'Lab 8: APIs'
+author: "James Barbour"
+date: "March 30, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(jsonlite)
+library(stringr)
+library(tidyverse)
+```
+
+```{r pressure}
+# q1:
+# 1a: Write a function that takes a list of movie titles, queries OMDB for each movie 
+# then returns a data frame with the following columns indicated in the function body 
+# below. given some movie titles returns a data frame with metadata about each movie
+get_movie_data_from_title <- function(titles){
+  
+  # start and end of query url
+  url_start <- 'https://www.omdbapi.com/?t='
+  url_end <- '&y=&plot=full&r=json'
+  
+  # movie data frame to return
+  # get the data for each colum
+  movie_df <- tibble(Title = titles,
+                     imdbRating = NA,
+                     imdbID = NA,
+                     Year = NA,
+                     Rated = NA,
+                     Runtime = NA,
+                     Genre = NA)
+  
+  # for each title in the list query the data base and extract the metadata
+  for(i in 1:length(titles)){
+    title <- titles[i]
+    
+    # create url for movie (hint: paste())
+    url <- paste(url_start, str_replace_all(title, ' ', '+'), url_end, sep='')
+
+    # query the API to get some json
+    raw_json <- read_lines(url)
+    
+    # turn the json into a nice list
+    movie <- fromJSON(raw_json)
+    
+    # the Response will be false if you mispelled a moive title 
+    if(movie$Response) {
+      
+      # add each information for each column
+      movie_df[i, 'imdbRating'] <- movie$imdbRating
+      movie_df[i, 'imdbID'] <- movie$imdbID
+      movie_df[i, 'Year'] <- movie$Year
+      movie_df[i, 'Rated'] <- movie$Rated
+      movie_df[i, 'Runtime'] <- movie$Runtime
+      movie_df[i, 'Genre'] <- movie$Genre
+    }
+    
+  }
+  
+  return(movie_df)
+}
+
+# 1b: query five moveies
+titles <- c("Serenity", "Logan", "Sunshine", "Sicario", "Serpico")
+get_movie_data_from_title(titles)
+
+# 2a. Modify the above function to instead take a list of imdb ids. Hint: This should 
+# be a matter of modifying the url – you can get an example from the OMDb website under 
+# the By ID section.
+get_movie_data_from_imdb_id <- function(imdb_ids) {
+  
+  # start and end of query url
+  url_start <- 'https://www.omdbapi.com/?i='
+  url_end <- '&y=&plot=full&r=json'
+  
+  # movie data frame to return
+  # get the data for each colum
+  movie_df <- tibble(Title = NA,
+                     imdbRating = NA,
+                     imdbID = imdb_ids,
+                     Year = NA,
+                     Rated = NA,
+                     Runtime = NA,
+                     Genre = NA)
+  
+  
+  
+  # for each title in the list query the data base and extract the metadata
+  for(i in 1:length(imdb_ids)){
+    imdb_id <- imdb_ids[i]
+    
+    # create url for movie (hint: paste())
+    url <- paste(url_start, imdb_id, url_end, sep='')
+
+    # query the API to get some json
+    raw_json <- read_lines(url)
+    
+    # turn the json into a nice list
+    movie <- fromJSON(raw_json)
+    
+    # the Response will be false if you mispelled a moive title 
+    if(movie$Response) {
+      
+      # add each information for each column
+      movie_df[i, 'imdbRating'] <- movie$imdbRating
+      movie_df[i, 'Title'] <- movie$Title
+      movie_df[i, 'Year'] <- movie$Year
+      movie_df[i, 'Rated'] <- movie$Rated
+      movie_df[i, 'Runtime'] <- movie$Runtime
+      movie_df[i, 'Genre'] <- movie$Genre
+    }
+    
+  }
+  
+  return(movie_df)
+  
+}
+
+# 2b. Test your function by querying five movies. Hint: You can find a movie’s 
+# imdb id on it’s imdb page.
+imdb_ids <- c('tt0379786', 'tt3315342', 'tt0448134', 'tt3397884', 'tt0070666')
+get_movie_data_from_imdb_id(imdb_ids)
+```

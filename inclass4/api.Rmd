@@ -1,0 +1,107 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r}
+# URL building function
+row_to_url <- function(row, key) {
+  # set the URL base
+  basestring = "https://maps.googleapis.com/maps/api/geocode/json?"
+  
+  # replace white space with "+" in individual address fields
+  street = gsub(" ", "+", row$street)
+  city = gsub(" ", "+", row$city) 
+  state = gsub(" ", "+", row$state)
+  
+  # concatenate subfields of address
+  address = paste(street, city, state, sep=",+")
+  address = paste0("address=", address)
+  
+  # create url string from base and addres parts        
+  urlstring = paste0(basestring, address)
+  
+  # add key to URL and return
+  key = paste0("key=", key)
+  urlwithkey = paste(urlstring, key, sep="&")
+  
+  return(urlwithkey)
+}
+
+get_and_parse <- function(urlstring) {
+  dat = readLines(urlstring)
+  datdf = fromJSON(dat)
+  return(datdf)
+}
+
+add_row <- function(df, jsndat, reqdat) {
+  # expects df to have columns [street, city, state, lat, lon, loctype]
+  # req dat is a row of data used for request [street, city, state]
+  resdf = data.frame(
+    street = reqdat$street,
+    city = reqdat$city,
+    state = reqdat$state,
+    lat = jsndat$results$geometry$location$lat,
+    lon = jsndat$results$geometry$location$lng,
+    loctype = jsndat$results$geometry$location_type
+  )
+  return(rbind(df, resdf))
+}
+
+map_data <- function(df, key) {
+  # expects df to have columns [street, city, state]
+  
+  # initialize a dataframe with appropriate columns using the first row of
+  # our request data
+  reqrow = df[1, c("street", "city", "state")]
+  qryurl = row_to_url(reqrow, key)
+  jsndf = get_and_parse(qryurl)
+  
+  newdf = data.frame(
+    street = reqrow$street,
+    city = reqrow$city,
+    state = reqrow$state,
+    lat = jsndf$results$geometry$location$lat,
+    lon = jsndf$results$geometry$location$lng,
+    loctype = jsndf$results$geometry$location_type
+  )
+  
+  # populate the dataframe with the rest of the request data
+  for (ix in 2:nrow(df)) {
+    reqrow = df[ix, c("street", "city", "state")]
+    qryurl = row_to_url(reqrow, key)
+    jsndf = get_and_parse(qryurl)
+    newdf = add_row(newdf, jsndf, reqrow)
+  }
+  
+  return(newdf)
+}
+
+```
+
+```{r}
+library(jsonlite)
+library(tidyverse)
+
+my_key <- 'AIzaSyAi6O7VzH9Yxg2iX0mvBUihapIlQ5bs2Vk'
+
+locs_df <- read_csv('place_locs.csv')
+
+head(locs_df)
+
+row_to_url(locs_df[1, ], my_key)
+url_1 = row_to_url(locs_df[1, ], my_key)
+url_1
+
+dat = readLines(url_1)
+dat
+
+datdf = fromJSON(dat)
+datdf$results
+datdf$results$geometry$location$lat
+datdf$results$geometry$location$lng
+datdf$results$geometry$location_type
+
+map_data(locs_df[1:10, ], my_key)
+
+```

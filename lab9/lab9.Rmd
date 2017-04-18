@@ -1,0 +1,34 @@
+---
+title: 'Lab 9: Web Scraping'
+author: "James Barbour"
+date: "April 6, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(stringr)
+library(rtweet)
+library(tidyverse)
+```
+
+```{r}
+# Q1: scrape NYT homepage
+nyt_url <- 'https://www.nytimes.com/'
+article_titles <- read_html(nyt_url) %>%
+  html_nodes('.story-heading') %>%
+  html_text(trim = TRUE) %>%
+  str_subset('.+')
+article_titles[1:10]
+
+# Q2: scrape Hadley Wickham’s twitter
+appname <- 'stor390scraper'
+consumer_key <- '00eRwXAofHfOi3VLoMpqle73k'
+consumer_secret <- 'Nkm0CGxjtgwFuwYO3BpVTpFS8WaltzG7iEzvydrLYEzyfv2qSu'
+timelime <- get_timeline("hadleywickham")
+timelime$text[1:100] %>%
+  tolower() %>%
+  str_subset('\\bdata\\b') %>%
+  length()
+```
